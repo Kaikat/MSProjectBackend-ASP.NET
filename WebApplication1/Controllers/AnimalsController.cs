@@ -14,7 +14,7 @@ using System.Web.Script.Serialization;
 
 namespace WebApplication1.Controllers
 {
-    public class Animal
+    public class AnimalDataInput
     {
         public string species;
         public string habitat_level;
@@ -43,20 +43,13 @@ namespace WebApplication1.Controllers
 
     public class AnimalsController : ApiController
     {
-        [HttpGet]
-        public IEnumerable<AnimalData> Get([FromBody]Animal animal)
-        //public string Get([FromBody]Animal animal)
+        Database Database = new Database();
+
+        [HttpGet] //All Animals from the Database
+        public IEnumerable<AnimalData> Get()
         {
-            StringBuilder query = new StringBuilder();
-            query.Append("SELECT * FROM Animals");
-
-            var connectionString = System.Configuration.ConfigurationManager.ConnectionStrings["Tamuyal"].ConnectionString;
-            SqlConnection connection = new SqlConnection(connectionString);
-            connection.Open();
-            SqlCommand command = new SqlCommand(query.ToString(), connection);
-            SqlDataReader reader = command.ExecuteReader();
-
-            string result = connection.State.ToString();
+            Database.Connect();
+            SqlDataReader reader = Database.SimpleQuery("SELECT * FROM Animals");
 
             List<AnimalData> animals = new List<AnimalData>();
             while (reader.Read())
@@ -76,198 +69,13 @@ namespace WebApplication1.Controllers
                 animals.Add(data);
             }
 
-            connection.Close();
-            return animals;
-
-
-
-            //StringBuilder query = new StringBuilder();
-            //query.Append("SELECT * FROM Animals");
-            //return animal.species;
-            /*if (animal == null)
-            {
-                 var connectionString = System.Configuration.ConfigurationManager.ConnectionStrings["Tamuyal"].ConnectionString;
-                 SqlConnection connection = new SqlConnection(connectionString);
-                 connection.Open();
-                 SqlCommand command = new SqlCommand(query.ToString(), connection);
-                 SqlDataReader reader = command.ExecuteReader();
-
-                 string result = connection.State.ToString();
-
-                List<AnimalData> animals = new List<AnimalData>();
-                 while(reader.Read())
-                 {
-                    AnimalData data = new AnimalData();
-                    data.species = reader["species"].ToString();
-                    data.name = reader["animal_name"].ToString();
-                    data.description = reader["description"].ToString();
-                    data.habitat_level = reader["habitat_level"].ToString();
-                    data.min_size = float.Parse(reader["min_height"].ToString());
-                    data.max_size = float.Parse(reader["max_height"].ToString());
-                    data.min_age = float.Parse(reader["min_age"].ToString());
-                    data.max_age = float.Parse(reader["max_age"].ToString());
-                    data.min_weight = float.Parse(reader["min_weight"].ToString());
-                    data.max_weight = float.Parse(reader["max_weight"].ToString());
-                    data.colorkey_map_file = reader["colorkey_map_file"].ToString();
-                    animals.Add(data);
-                 }
-  
-                connection.Close();
-                return animals;
-            }*/
-
-
-
-
-
-
-
-
-
-            /*  query.Append(" WHERE ");
-              bool appendAnd = false;
-
-              StringBuilder species = new StringBuilder("");
-              StringBuilder habitatLevel = new StringBuilder("");
-              StringBuilder age = new StringBuilder("");
-              StringBuilder weight = new StringBuilder("");
-              StringBuilder height = new StringBuilder("");
-
-              if (animal.Species != null)
-              {
-                  species.Append("species = ");
-                  species.Append(animal.Species);
-                  appendAnd = true;
-              }
-              if (animal.HabitatLevel != null)
-              {
-                  if (appendAnd)
-                  {
-                      habitatLevel.Append(" and ");
-                  }
-                  habitatLevel.Append("habitat_level = ");
-                  habitatLevel.Append(animal.HabitatLevel);
-                  appendAnd = true;
-              }
-
-              if (animal.MaxAge != null && animal.MinAge != null)
-              {
-                  if (appendAnd)
-                  {
-                      age.Append(" and ");
-                  }
-                  age.Append("age > ");
-                  age.Append(animal.MinAge);
-                  age.Append(" and ");
-                  age.Append("age < ");
-                  age.Append(animal.MaxAge);
-                  appendAnd = true;
-              }
-              else if (animal.MaxAge != null)
-              {
-                  if (appendAnd)
-                  {
-                      age.Append(" and ");
-                  }
-                  age.Append("age < ");
-                  age.Append(animal.MaxAge);
-                  appendAnd = true;
-              }
-              else if (animal.MinAge != null)
-              {
-                  if (appendAnd)
-                  {
-                      age.Append(" and ");
-                  }
-                  age.Append("age > ");
-                  age.Append(animal.MinAge);
-                  appendAnd = true;
-              }
-
-              if (animal.MaxWeight != null && animal.MinWeight != null)
-              {
-                  if (appendAnd)
-                  {
-                      weight.Append(" and ");
-                  }
-                  weight.Append("age > ");
-                  weight.Append(animal.MinWeight);
-                  weight.Append(" and ");
-                  weight.Append("age < ");
-                  weight.Append(animal.MaxWeight);
-                  appendAnd = true;
-              }
-              else if (animal.MaxWeight != null)
-              {
-                  if (appendAnd)
-                  {
-                      weight.Append(" and ");
-                  }
-                  weight.Append("age < ");
-                  weight.Append(animal.MaxWeight);
-                  appendAnd = true;
-              }
-              else if (animal.MinWeight != null)
-              {
-                  if (appendAnd)
-                  {
-                      weight.Append(" and ");
-                  }
-                  weight.Append("age > ");
-                  weight.Append(animal.MinWeight);
-                  appendAnd = true;
-              }
-
-              if (animal.MaxHeight != null && animal.MinHeight != null)
-              {
-                  if (appendAnd)
-                  {
-                      height.Append(" and ");
-                  }
-                  height.Append("age > ");
-                  height.Append(animal.MinHeight);
-                  height.Append(" and ");
-                  height.Append("age < ");
-                  height.Append(animal.MaxHeight);
-              }
-              else if (animal.MaxHeight != null)
-              {
-                  if (appendAnd)
-                  {
-                      height.Append(" and ");
-                  }
-                  height.Append("age < ");
-                  height.Append(animal.MaxHeight);
-              }
-              else if (animal.MinHeight != null)
-              {
-                  if (appendAnd)
-                  {
-                      height.Append(" and ");
-                  }
-                  height.Append("age > ");
-                  height.Append(animal.MinHeight);
-              }
-
-              StringBuilder finalQuery = new StringBuilder();
-              finalQuery.Append(query);
-              finalQuery.Append(species);
-              finalQuery.Append(habitatLevel);
-              finalQuery.Append(age);
-              finalQuery.Append(weight);
-              finalQuery.Append(height);
-
-              AnimalData lala = new AnimalData();
-              lala.species = finalQuery.ToString();
-              List<AnimalData> lili = new List<AnimalData>();
-              lili.Add(lala);
-              //return Enumerable.Empty<AnimalData>();
-              return lili;
-              */
+            Database.Disconnect();
+            return animals; 
         }
 
-        [HttpPut]
-        public List<AnimalData> Put([FromBody] Animal animal)
+        [HttpPost]
+        //This is for someone querying our database for animals with certain conditions
+        public List<AnimalData> Put([FromBody] AnimalDataInput animal)
         {
             StringBuilder query = new StringBuilder();
             query.Append("SELECT * FROM Animals");

@@ -41,17 +41,27 @@ namespace WebApplication1.Controllers
         public string colorkey_map_file;
     }
 
+    public class AnimalList
+    {
+        public List<AnimalData> AnimalData;
+        public AnimalList()
+        {
+            AnimalData = new List<AnimalData>();
+        }
+    }
+
     public class AnimalsController : ApiController
     {
         Database Database = new Database();
 
         [HttpGet] //All Animals from the Database
-        public IEnumerable<AnimalData> Get()
+        //public IEnumerable<AnimalData> Get()
+        public AnimalList Get()
         {
             Database.Connect();
             SqlDataReader reader = Database.SimpleQuery("SELECT * FROM Animals");
 
-            List<AnimalData> animals = new List<AnimalData>();
+            AnimalList AnimalList = new AnimalList();
             while (reader.Read())
             {
                 AnimalData data = new AnimalData();
@@ -66,11 +76,11 @@ namespace WebApplication1.Controllers
                 data.min_weight = float.Parse(reader["min_weight"].ToString());
                 data.max_weight = float.Parse(reader["max_weight"].ToString());
                 data.colorkey_map_file = reader["colorkey_map_file"].ToString();
-                animals.Add(data);
+                AnimalList.AnimalData.Add(data);
             }
 
             Database.Disconnect();
-            return animals; 
+            return AnimalList;
         }
 
         [HttpPost]

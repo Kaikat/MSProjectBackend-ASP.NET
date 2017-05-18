@@ -27,6 +27,7 @@ namespace WebApplication1.Controllers
         Database Database = new Database();
 
         [HttpGet]
+        //http://tamuyal.azurewebsites.net/api/player?session_key=SessionKey (replace SessionKey with valid session key)
         public PlayerData PlayerBasicData([FromUri]string session_key)
         {
             SqlCommand query = new SqlCommand(

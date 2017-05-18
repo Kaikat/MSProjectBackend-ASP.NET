@@ -260,5 +260,6 @@ paket-files/
 __pycache__/
 *.pyc
 
-# Text files in SensorModel
+# Files in SensorModel
 SensorModel/*.txt
+SensorModel/*.Rhistory

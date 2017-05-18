@@ -52,14 +52,14 @@ namespace WebApplication1.Controllers
 
     public class AnimalsController : ApiController
     {
-        Database Database = new Database();
+        private Database Database = new Database();
 
         [HttpGet] //All Animals from the Database
         //public IEnumerable<AnimalData> Get()
         public AnimalList Get()
         {
             Database.Connect();
-            SqlDataReader reader = Database.SimpleQuery("SELECT * FROM Animals");
+            SqlDataReader reader = Database.Query("SELECT * FROM Animals;");
 
             AnimalList AnimalList = new AnimalList();
             while (reader.Read())

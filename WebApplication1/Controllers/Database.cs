@@ -21,7 +21,7 @@ namespace WebApplication1.Controllers
             Connection.Open();
         }
 
-        public SqlDataReader SimpleQuery(string query)
+        public SqlDataReader Query(string query)
         {
             SqlCommand command = new SqlCommand(query, Connection);
             return command.ExecuteReader();
@@ -29,6 +29,7 @@ namespace WebApplication1.Controllers
 
         public SqlDataReader Query(SqlCommand command)
         {
+            command.Connection = Connection;
             return command.ExecuteReader();
         }
 

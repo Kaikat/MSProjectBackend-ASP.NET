@@ -32,15 +32,15 @@ namespace WebApplication1.Controllers
             }
         }
 
-        Database Database = new Database();
+        private Database Database = new Database();
 
         [HttpGet]
         public LocationsList Get()
         {
             Database.Connect();
-            SqlDataReader reader = Database.SimpleQuery(
+            SqlDataReader reader = Database.Query(
                 "SELECT g.location_id, g.location_name, g.x_coordinate, g.y_coordinate, g.description, a.species " +
-                "FROM GPS_Locations as g LEFT JOIN Animal_Locations as a ON g.location_id = a.location_id"
+                "FROM GPS_Locations as g LEFT JOIN Animal_Locations as a ON g.location_id = a.location_id;"
             );
 
             LocationsList locations = new LocationsList();

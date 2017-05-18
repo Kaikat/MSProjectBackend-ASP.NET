@@ -9,6 +9,7 @@ using System.Data.SqlClient;
 using System.Security.Cryptography;
 using System.Text;
 
+using  Utilities;
 namespace WebApplication1.Controllers
 {
     public class CreateAccountController : ApiController
@@ -19,26 +20,6 @@ namespace WebApplication1.Controllers
             public string name;
             public string password;
             public string email;
-        }
-
-        public class LoginInfo
-        {
-            public string username;
-            public string password;
-        }
-
-        public class BasicResponse
-        {
-            public string id;
-            public string message;
-            public bool error;
-
-            public BasicResponse()
-            {
-                id = "";
-                message = "";
-                error = true;
-            }
         }
 
         public class EncryptedPasswordPair
@@ -57,10 +38,9 @@ namespace WebApplication1.Controllers
         private const int Currency = 1000;
         private const string USER_EXISTS_ERROR = "A player with that username already exists. Please select a different username.";
         private const string EMAIL_EXISTS_ERROR = "An account with that email already exists!";
-        private const string INVALID_USERNAME_PASSWORD = "Invalid username or password";
 
         [HttpPost]
-        public BasicResponse Post([FromBody] AccountDetails details)
+        public BasicResponse AttemptToCreateAccount([FromBody] AccountDetails details)
         {
             BasicResponse result = new BasicResponse();
             result.id = "account_creation";
@@ -101,6 +81,7 @@ namespace WebApplication1.Controllers
             return result;
         }
 
+        //Helper functions
         private bool isUnique(string item, string value)
         {
             bool unique = true;
@@ -137,46 +118,6 @@ namespace WebApplication1.Controllers
             
             return new EncryptedPasswordPair(Convert.ToBase64String(hashBytes), Convert.ToBase64String(salt));
         }
-
-       // [HttpPost]
-        /*public BasicResponse DecryptPassword([FromBody] LoginInfo login)
-        {
-            BasicResponse result = new BasicResponse();
-            result.id = "session_id";
-
-            SqlCommand query = new SqlCommand("SELECT * FROM Users WHERE username = @username;");
-            query.Parameters.AddWithValue("@username", login.username);
-            Database.Connect();
-            SqlDataReader reader = Database.Query(query);
-
-            while(reader.Read())
-            {
-                byte[] hashBytes = Convert.FromBase64String(reader["pass_hash"].ToString());
-                byte[] salt = new byte[16];
-                Array.Copy(hashBytes, 0, salt, 0, 16);
-                var pbkdf2 = new Rfc2898DeriveBytes(login.password, salt, 10000);
-                byte[] hash = pbkdf2.GetBytes(20);
-                for(int i = 0; i < 20; i++)
-                {
-                    if(hashBytes[i+16] != hash[i])
-                    {
-                        result.message = INVALID_USERNAME_PASSWORD;
-                        Database.Disconnect();
-                        return result;
-                    }
-                }
-
-                byte[] sessionToken;
-                RNGCryptoServiceProvider rng = new RNGCryptoServiceProvider();
-                rng.GetBytes(sessionToken = new byte[16]);
-
-                result.message = sessionToken.ToString();
-                result.error = false;
-            }
-
-            Database.Disconnect();
-            return result;
-        }*/
     }
 }
 

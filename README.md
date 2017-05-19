@@ -5,7 +5,7 @@ In order to get this code to work on your computer you need to go into the root 
 nuget.exe install WebApplication1\packages.config -OutputDirectory packages
 ```
 
-API calls can be accessed in the following format.
+API calls can be accessed in the following format. portNumber is currently set to 50099.
 ```
-https://localhost/{portNumber}/api/{controllerName}/{queryString}
+http://localhost:{portNumber}/api/{controllerName}
 ```

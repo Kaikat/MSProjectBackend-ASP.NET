@@ -26,5 +26,15 @@ namespace WebApplication1.Controllers
 
             return query;
         }
+
+        public static int ToInt(this object readerObject)
+        {
+            return Int32.Parse(readerObject.ToString());
+        }
+
+        public static float ToFloat(this object readerObject)
+        {
+            return float.Parse(readerObject.ToString());
+        }
     }
 }

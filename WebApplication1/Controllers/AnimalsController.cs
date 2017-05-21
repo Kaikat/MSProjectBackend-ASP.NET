@@ -14,44 +14,44 @@ using System.Web.Script.Serialization;
 
 namespace WebApplication1.Controllers
 {
-    public class AnimalDataInput
-    {
-        public string species;
-        public string habitat_level;
-        public float? min_age;
-        public float? max_age;
-        public float? min_weight;
-        public float? max_weight;
-        public float? min_height;
-        public float? max_height;
-    }
-
-    public class AnimalData
-    {
-        public string species;
-        public string name;
-        public string description;
-        public string habitat_level;
-        public float min_size;
-        public float max_size;
-        public float min_age;
-        public float max_age;
-        public float min_weight;
-        public float max_weight;
-        public string colorkey_map_file;
-    }
-
-    public class AnimalList
-    {
-        public List<AnimalData> AnimalData;
-        public AnimalList()
-        {
-            AnimalData = new List<AnimalData>();
-        }
-    }
-
     public class AnimalsController : ApiController
     {
+        public class AnimalDataInput
+        {
+            public string species;
+            public string habitat_level;
+            public float? min_age;
+            public float? max_age;
+            public float? min_weight;
+            public float? max_weight;
+            public float? min_height;
+            public float? max_height;
+        }
+
+        public class AnimalData
+        {
+            public string species;
+            public string name;
+            public string description;
+            public string habitat_level;
+            public float min_size;
+            public float max_size;
+            public float min_age;
+            public float max_age;
+            public float min_weight;
+            public float max_weight;
+            public string colorkey_map_file;
+        }
+
+        public class AnimalList
+        {
+            public List<AnimalData> AnimalData;
+            public AnimalList()
+            {
+                AnimalData = new List<AnimalData>();
+            }
+        }
+
         private Database Database = new Database();
 
         [HttpGet] //All Animals from the Database
@@ -87,149 +87,36 @@ namespace WebApplication1.Controllers
         //This is for someone querying our database for animals with certain conditions
         public List<AnimalData> Put([FromBody] AnimalDataInput animal)
         {
-            StringBuilder query = new StringBuilder();
-            query.Append("SELECT * FROM Animals");
-            query.Append(" WHERE ");
-            bool appendAnd = false;
+            string[] columnNames = { "species", "habitat_level" };
+            string[] valueNames = { "species", "habitatLevel" };
+            bool[] hasValue = { animal.species != null, animal.habitat_level != null };
 
-            StringBuilder species = new StringBuilder("");
-            StringBuilder habitatLevel = new StringBuilder("");
-            StringBuilder age = new StringBuilder("");
-            StringBuilder weight = new StringBuilder("");
-            StringBuilder height = new StringBuilder("");
+            StringBuilder queryBuilder = new StringBuilder(QueryBuilder.BuildSelectClause("Animals"));
+            queryBuilder.Append(QueryBuilder.BuildWhereClauseFromSnippets(
+                new string[] {
+                    QueryBuilder.BuildWhereClause(columnNames, valueNames, hasValue),
+                    QueryBuilder.BuildComparisonClause("age", animal.min_age == null ? null : "minAge", animal.max_age == null ? null : "maxAge"),
+                    QueryBuilder.BuildComparisonClause("weight", animal.min_weight == null ? null : "minWeight", animal.max_weight == null ? null : "maxWeight"),
+                    QueryBuilder.BuildComparisonClause("height", animal.min_height == null ? null : "minHeight", animal.max_height == null ? null : "maxHeight")
+                }
+            ));
 
-            if (animal.species != null)
-            {
-                species.Append("species = '");
-                species.Append(animal.species);
-                species.Append("'");
-                appendAnd = true;
-            }
-            if (animal.habitat_level != null)
-            {
-                if (appendAnd)
-                {
-                    habitatLevel.Append(" and ");
-                }
-                habitatLevel.Append("habitat_level = '");
-                habitatLevel.Append(animal.habitat_level);
-                habitatLevel.Append("'");
-                appendAnd = true;
-            }
+            SqlCommand query = new SqlCommand(queryBuilder.ToString());
+            query.AddParameter("@species", animal.species);
+            query.AddParameter("@habitatLevel", animal.habitat_level);
+            query.AddParameter("@minAge", animal.min_age);
+            query.AddParameter("@maxAge", animal.max_age);
+            query.AddParameter("@minWeight", animal.min_weight);
+            query.AddParameter("@maxWeight", animal.max_weight);
+            query.AddParameter("@minHeight", animal.min_height);
+            query.AddParameter("@maxHeight", animal.max_height);
 
-            if (animal.max_age != null && animal.min_age != null)
-            {
-                if (appendAnd)
-                {
-                    age.Append(" and ");
-                }
-                age.Append("age > ");
-                age.Append(animal.min_age);
-                age.Append(" and ");
-                age.Append("age < ");
-                age.Append(animal.max_age);
-                appendAnd = true;
-            }
-            else if (animal.max_age != null)
-            {
-                if (appendAnd)
-                {
-                    age.Append(" and ");
-                }
-                age.Append("age < ");
-                age.Append(animal.max_age);
-                appendAnd = true;
-            }
-            else if (animal.min_age != null)
-            {
-                if (appendAnd)
-                {
-                    age.Append(" and ");
-                }
-                age.Append("age > ");
-                age.Append(animal.min_age);
-                appendAnd = true;
-            }
-
-            if (animal.max_weight != null && animal.min_weight != null)
-            {
-                if (appendAnd)
-                {
-                    weight.Append(" and ");
-                }
-                weight.Append("weight > ");
-                weight.Append(animal.min_weight);
-                weight.Append(" and ");
-                weight.Append("weight < ");
-                weight.Append(animal.max_weight);
-                appendAnd = true;
-            }
-            else if (animal.max_weight != null)
-            {
-                if (appendAnd)
-                {
-                    weight.Append(" and ");
-                }
-                weight.Append("weight < ");
-                weight.Append(animal.max_weight);
-                appendAnd = true;
-            }
-            else if (animal.min_weight != null)
-            {
-                if (appendAnd)
-                {
-                    weight.Append(" and ");
-                }
-                weight.Append("weight > ");
-                weight.Append(animal.min_weight);
-                appendAnd = true;
-            }
-
-            if (animal.max_height != null && animal.min_height != null)
-            {
-                if (appendAnd)
-                {
-                    height.Append(" and ");
-                }
-                height.Append("height > ");
-                height.Append(animal.min_height);
-                height.Append(" and ");
-                height.Append("height < ");
-                height.Append(animal.max_height);
-            }
-            else if (animal.max_height != null)
-            {
-                if (appendAnd)
-                {
-                    height.Append(" and ");
-                }
-                height.Append("height < ");
-                height.Append(animal.max_height);
-            }
-            else if (animal.min_height != null)
-            {
-                if (appendAnd)
-                {
-                    height.Append(" and ");
-                }
-                height.Append("height > ");
-                height.Append(animal.min_height);
-            }
-
-            StringBuilder finalQuery = new StringBuilder();
-            finalQuery.Append(query);
-            finalQuery.Append(species);
-            finalQuery.Append(habitatLevel);
-            finalQuery.Append(age);
-            finalQuery.Append(weight);
-            finalQuery.Append(height);
-
-            AnimalData lala = new AnimalData();
-            lala.species = finalQuery.ToString();
-            List<AnimalData> lili = new List<AnimalData>();
-            lili.Add(lala);
+            AnimalData animalData = new AnimalData();
+            animalData.species = query.GetQueryText();
+            List<AnimalData> animals = new List<AnimalData>();
+            animals.Add(animalData);
+            return animals;
             //return Enumerable.Empty<AnimalData>();
-            return lili;
         }
     }
 }

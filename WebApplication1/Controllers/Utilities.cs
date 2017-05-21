@@ -17,5 +17,19 @@ namespace Utilities
             message = "";
             error = true;
         }
+
+        public BasicResponse(string responseID)
+        {
+            id = responseID;
+            message = "";
+            error = true;
+        }
+
+        public BasicResponse(string responseID, string responseMessage)
+        {
+            id = responseID;
+            message = responseMessage;
+            error = true;
+        }
     }
 }

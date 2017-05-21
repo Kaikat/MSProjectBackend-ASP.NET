@@ -14,44 +14,44 @@ using System.Web.Script.Serialization;
 
 namespace WebApplication1.Controllers
 {
-    public class AnimalDataInput
-    {
-        public string species;
-        public string habitat_level;
-        public float? min_age;
-        public float? max_age;
-        public float? min_weight;
-        public float? max_weight;
-        public float? min_height;
-        public float? max_height;
-    }
-
-    public class AnimalData
-    {
-        public string species;
-        public string name;
-        public string description;
-        public string habitat_level;
-        public float min_size;
-        public float max_size;
-        public float min_age;
-        public float max_age;
-        public float min_weight;
-        public float max_weight;
-        public string colorkey_map_file;
-    }
-
-    public class AnimalList
-    {
-        public List<AnimalData> AnimalData;
-        public AnimalList()
-        {
-            AnimalData = new List<AnimalData>();
-        }
-    }
-
     public class AnimalsController : ApiController
     {
+        public class AnimalDataInput
+        {
+            public string species;
+            public string habitat_level;
+            public float? min_age;
+            public float? max_age;
+            public float? min_weight;
+            public float? max_weight;
+            public float? min_height;
+            public float? max_height;
+        }
+
+        public class AnimalData
+        {
+            public string species;
+            public string name;
+            public string description;
+            public string habitat_level;
+            public float min_size;
+            public float max_size;
+            public float min_age;
+            public float max_age;
+            public float min_weight;
+            public float max_weight;
+            public string colorkey_map_file;
+        }
+
+        public class AnimalList
+        {
+            public List<AnimalData> AnimalData;
+            public AnimalList()
+            {
+                AnimalData = new List<AnimalData>();
+            }
+        }
+
         private Database Database = new Database();
 
         [HttpGet] //All Animals from the Database

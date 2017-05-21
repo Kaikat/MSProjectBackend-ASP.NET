@@ -180,6 +180,7 @@
     <Compile Include="Controllers\CreateAccountController.cs" />
     <Compile Include="Controllers\AnimalsController.cs" />
     <Compile Include="Controllers\Database.cs" />
+    <Compile Include="Controllers\ExtensionMethods.cs" />
     <Compile Include="Controllers\GenerateAnimalController.cs" />
     <Compile Include="Controllers\HomeController.cs" />
     <Compile Include="Controllers\LocationsController.cs" />
@@ -187,6 +188,7 @@
     <Compile Include="Controllers\NotifyAnimalEncounterController.cs" />
     <Compile Include="Controllers\PlayerAnimalsController.cs" />
     <Compile Include="Controllers\PlayerController.cs" />
+    <Compile Include="Controllers\QueryBuilder.cs" />
     <Compile Include="Controllers\Utilities.cs" />
     <Compile Include="Controllers\ValuesController.cs" />
     <Compile Include="Global.asax.cs">

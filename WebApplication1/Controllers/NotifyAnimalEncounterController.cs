@@ -21,10 +21,10 @@ namespace WebApplication1.Controllers
         public BasicResponse NotifyAnimalEncounter([FromUri]string session_key, string encounter_type, string species)
         {
             BasicResponse result = new BasicResponse();
-            result.id = "animal discovery";
 
             if (encounter_type == "discovered")
             {
+                result.id = "animal discovery";
                 if (AnimalPreviouslyDiscovered(session_key, species))
                 {
                     result.message = ANIMAL_PREVIOUSLY_DISCOVERED;
@@ -41,12 +41,12 @@ namespace WebApplication1.Controllers
                 Database.Query(query);
                 Database.Disconnect();
             }
-            /* 
              //TODO: If caught or released
-             else 
+             else
              {
+                result.id = "caught";
 
-             }*/
+             }
             result.error = false;
             return result;
         }

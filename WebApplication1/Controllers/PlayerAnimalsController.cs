@@ -16,8 +16,8 @@ namespace WebApplication1.Controllers
 
         public class DiscoveredAnimal
         {
-            public string species;
-            public string encounter_date;
+            public string animal_species;
+            public string discovered_date;
         }
 
         public class DiscoveredSpecies
@@ -34,8 +34,8 @@ namespace WebApplication1.Controllers
 
         public class OwnedAnimal
         {
-            public int encounter_id;
-            public string species;
+            public int animal_id;
+            public string animal_species;
             public string nickname;
             public float height;
             public float age;
@@ -57,7 +57,7 @@ namespace WebApplication1.Controllers
             }
         }
 
-        [HttpPost]
+        [HttpGet]
         public object GetPlayerAnimals([FromUri]string session_key, string encounter_type)
         {
             switch(encounter_type)
@@ -88,8 +88,8 @@ namespace WebApplication1.Controllers
             while (reader.Read())
             {
                 DiscoveredAnimal animal = new DiscoveredAnimal();
-                animal.species = reader["species"].ToString();
-                animal.encounter_date = reader["encounter_date"].ToString();
+                animal.animal_species = reader["species"].ToString();
+                animal.discovered_date = reader["encounter_date"].ToString();
                 discoveredList.DiscoveredSpeciesData.Add(animal);
                 discoveredList.empty = false;
             }
@@ -114,8 +114,8 @@ namespace WebApplication1.Controllers
             while (reader.Read())
             {
                 OwnedAnimal animal = new OwnedAnimal();
-                animal.encounter_id = reader["encounter_id"].ToInt();
-                animal.species = reader["species"].ToString();
+                animal.animal_id = reader["encounter_id"].ToInt();
+                animal.animal_species = reader["species"].ToString();
                 animal.nickname = reader["nickname"].ToString();
                 animal.height = reader["height"].ToFloat();
                 animal.age = reader["age"].ToFloat();

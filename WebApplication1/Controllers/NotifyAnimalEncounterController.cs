@@ -17,7 +17,7 @@ namespace WebApplication1.Controllers
             public string session_key;
             public string encounter_type;
             public string species;
-            public string encounter_id;
+            public int encounter_id;
             public string nickname;
             public float? age;
             public float? height;
@@ -78,6 +78,7 @@ namespace WebApplication1.Controllers
         private BasicResponse NotifyAnimalCaught(AnimalEncounterData animalData)
         {
             BasicResponse result = new BasicResponse(CAUGHT);
+
             SqlCommand query = new SqlCommand(
                 "INSERT INTO Owned_Animals VALUES(" +
                     "(SELECT username FROM Sessions WHERE session_key = @sessionKey), " +

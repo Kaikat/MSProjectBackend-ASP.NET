@@ -77,7 +77,7 @@ namespace WebApplication1.Controllers
             Database.Disconnect();
 
             result.error = false;
-            result.message = details.username;
+            result.message = "Account Created";
             return result;
         }
 

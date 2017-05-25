@@ -32,6 +32,8 @@ namespace WebApplication1.Controllers
         {
             public string species;
             public string name;
+            public string nahuatl_name;
+            public string spanish_name;
             public string description;
             public string habitat_level;
             public float min_size;
@@ -67,6 +69,8 @@ namespace WebApplication1.Controllers
                 AnimalData data = new AnimalData();
                 data.species = reader["species"].ToString();
                 data.name = reader["animal_name"].ToString();
+                data.nahuatl_name = reader["nahuatl_name"].ToString();
+                data.spanish_name = reader["spanish_name"].ToString();
                 data.description = reader["description"].ToString();
                 data.habitat_level = reader["habitat_level"].ToString();
                 data.min_size = float.Parse(reader["min_height"].ToString());

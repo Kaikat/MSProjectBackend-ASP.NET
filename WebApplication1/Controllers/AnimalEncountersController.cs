@@ -40,7 +40,7 @@ namespace WebApplication1.Controllers
 
         Database Database = new Database();
 
-        [HttpPost]
+        [HttpGet]
         public JournalEntries GetAnimalEncounters([FromUri]string session_key)
         {
             JournalEntries entries = new JournalEntries();

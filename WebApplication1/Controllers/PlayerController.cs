@@ -6,6 +6,7 @@ using System.Net.Http;
 using System.Web.Http;
 
 using System.Data.SqlClient;
+using Utilities;
 namespace WebApplication1.Controllers
 {
     public class PlayerController : ApiController
@@ -43,6 +44,26 @@ namespace WebApplication1.Controllers
             Database.Disconnect();
 
             return playerData;
+        }
+
+        [HttpGet]
+        public BasicResponse UpdateAvatar([FromUri]string session_key, string avatar)
+        {
+            BasicResponse response = new BasicResponse("updateAvatar");
+            SqlCommand query = new SqlCommand(
+                "UPDATE Users SET avatar = @avatar " +
+                "FROM Users " +
+                "INNER JOIN Sessions ON Users.username = Sessions.username " +
+                "WHERE Sessions.session_key = @sessionKey"
+            );
+            query.Parameters.AddWithValue("@avatar", avatar);
+            query.Parameters.AddWithValue("@sessionKey", session_key);
+            Database.Connect();
+            Database.Query(query);
+            Database.Disconnect();
+            response.message = "Set player avatar to " + avatar;
+            response.error = false;
+            return response;
         }
     }
 }

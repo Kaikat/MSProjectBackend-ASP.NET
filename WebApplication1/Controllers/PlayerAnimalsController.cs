@@ -14,7 +14,7 @@ namespace WebApplication1.Controllers
     {
         Database Database = new Database();
 
-        public class DiscoveredAnimal
+        public class DiscoveredSpeciesData
         {
             public string animal_species;
             public string discovered_date;
@@ -22,12 +22,12 @@ namespace WebApplication1.Controllers
 
         public class DiscoveredSpecies
         {
-            public List<DiscoveredAnimal> DiscoveredSpeciesData;
             public bool empty;
+            public List<DiscoveredSpeciesData> DiscoveredSpeciesData;
 
             public DiscoveredSpecies()
             {
-                DiscoveredSpeciesData = new List<DiscoveredAnimal>();
+                DiscoveredSpeciesData = new List<DiscoveredSpeciesData>();
                 empty = true;
             }
         }
@@ -87,7 +87,7 @@ namespace WebApplication1.Controllers
             SqlDataReader reader = Database.Query(query);
             while (reader.Read())
             {
-                DiscoveredAnimal animal = new DiscoveredAnimal();
+                DiscoveredSpeciesData animal = new DiscoveredSpeciesData();
                 animal.animal_species = reader["species"].ToString();
                 animal.discovered_date = reader["encounter_date"].ToString();
                 discoveredList.DiscoveredSpeciesData.Add(animal);

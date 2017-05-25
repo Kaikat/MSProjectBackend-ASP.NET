@@ -62,7 +62,7 @@ namespace WebApplication1.Controllers
             //Create the account
             EncryptedPasswordPair passwordSet = HashPassword(details.password);
 
-            string avatar = "lena";
+            string avatar = "Default";
             SqlCommand queryCreateAccount = new SqlCommand("INSERT INTO Users values(@username, @name, @hash, @salt, @email, @currency, @avatar);");
             queryCreateAccount.Parameters.AddWithValue("@username", details.username);
             queryCreateAccount.Parameters.AddWithValue("@name", details.name);

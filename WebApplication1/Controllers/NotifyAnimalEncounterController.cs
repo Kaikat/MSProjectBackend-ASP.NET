@@ -62,15 +62,20 @@ namespace WebApplication1.Controllers
                 return result;
             }
 
+            string date = DateTime.Now.ToString();
             SqlCommand query = new SqlCommand(
                 "INSERT INTO Discovered_Animals VALUES(" +
                     "(SELECT username FROM Sessions WHERE session_key = @sessionKey), " +
-                    "@species, GETDATE());");
+                    "@species, @date);"
+            );
             query.Parameters.AddWithValue("@sessionKey", session_key);
             query.Parameters.AddWithValue("@species", species);
+            query.Parameters.AddWithValue("@date", date);
             Database.Connect();
             Database.Query(query);
             Database.Disconnect();
+
+            result.message = date;
             result.error = false;
             return result;
         }

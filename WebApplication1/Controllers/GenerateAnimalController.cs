@@ -62,8 +62,8 @@ namespace WebApplication1.Controllers
         private int CalculateAnimalID(string sessionKey)
         {
             SqlCommand query = new SqlCommand(
-                "SELECT MAX(encounter_id) as animal_count FROM Animal_Encounters " +
-                "INNER JOIN Sessions ON Sessions.username = Animal_Encounters.username " +
+                "SELECT MAX(encounter_id) as animal_count FROM Animal_History " +
+                "INNER JOIN Sessions ON Sessions.username = Animal_History.username " +
                 "WHERE Sessions.session_key = @session_key");
             query.Parameters.AddWithValue("@session_key", sessionKey);
             Database.Connect();

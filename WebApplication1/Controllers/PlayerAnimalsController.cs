@@ -101,21 +101,6 @@ namespace WebApplication1.Controllers
         {
            OwnedAnimals animals = new OwnedAnimals();
             SqlCommand query = new SqlCommand(
-                /*"SELECT a.encounter_id, b.species, b.nickname, a.height, a.age, a.weight, " +
-                "a.health_1, a.health_2, a.biomagnification, a.encounter_date, Released_Animals.release_date " +
-                "FROM Animal_History as a " +
-                "INNER JOIN Sessions ON Sessions.username = a.username " +
-                "INNER JOIN Player_Animals as b ON b.username = a.username and b.encounter_id = a.encounter_id " +
-                "INNER JOIN(SELECT encounter_id, min(encounter_date) as caught_date " +
-                    "FROM Animal_History as suba " + 
-                    "INNER JOIN Sessions on Sessions.username = suba.username " +
-                    "WHERE Sessions.session_key = @sessionKey" +
-                    "GROUP BY encounter_id) as mindate " +
-                "ON mindate.encounter_id = a.encounter_id AND mindate.caught_date = a.encounter_date " +
-                "LEFT JOIN Released_Animals ON Released_Animals.username = a.username and " +
-                "Released_Animals.encounter_id = a.encounter_id " +
-                "WHERE Sessions.session_key = @sessionKey and Released_Animals.encounter_id is null"*/
-
                 "SELECT a.encounter_id, b.species, b.nickname, a.height, a.age, a.weight, " +
                 "a.health_1, a.health_2, a.biomagnification, a.encounter_date, Released_Animals.release_date " +
                 "FROM Animal_History as a " +

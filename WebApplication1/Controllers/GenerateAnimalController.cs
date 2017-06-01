@@ -7,14 +7,40 @@ using System.Web.Http;
 
 using System.Data.SqlClient;
 using System.IO;
+using System.Text.RegularExpressions;
 
 namespace WebApplication1.Controllers
 {
     public class GenerateAnimalController : ApiController
     {
-        private const string GEOG_IDEAS_AIRSTRIP_LINK = "http://aten.geog.ucsb.edu/Data/AirstripALL_table1.txt";
-        private const int NUM_SENSOR_ROW_BYTES = 512;
-        private const int NUM_SENSOR_ROW_ELEMENTS = 51;
+        /**
+         Struct containing address relevant for data for sensor.
+         PARAMETERS reference the beta parameters of a linear regression model, and
+         should contain one more element than INDICES due to the intercept parameter (Beta_0).
+        */
+        private struct SensorData
+        {
+            public string HTTP_ADDRESS;
+            public int NUM_BYTES;
+            public int NUM_ELEMENTS;
+            public List<int> INDICES;
+            public List<float> PARAMETERS;
+
+            public SensorData(string httpAddress, int numBytes, int numElements, List<int> indices, List<float> parameters)
+            {
+                HTTP_ADDRESS = httpAddress;
+                NUM_BYTES = numBytes;
+                NUM_ELEMENTS = numElements;
+                INDICES = indices;
+                PARAMETERS = parameters;
+            }
+        }
+        private SensorData GEOG_IDEAS_AIRSTRIP = new SensorData("http://aten.geog.ucsb.edu/Data/AirstripALL_table1.txt",
+                                                                512,
+                                                                51,
+                                                                new List<int>() { },
+                                                                new List<float> { });
+
         public class GennedAnimalData
         {
             public string animal_species;
@@ -114,7 +140,7 @@ namespace WebApplication1.Controllers
             // Get length of file
             int contentLength = 0;
 
-            WebRequest lengthRequest = WebRequest.Create(GEOG_IDEAS_AIRSTRIP_LINK);
+            WebRequest lengthRequest = WebRequest.Create(GEOG_IDEAS_AIRSTRIP.HTTP_ADDRESS);
             lengthRequest.Method = "HEAD";
             using (WebResponse resp = lengthRequest.GetResponse())
             {
@@ -123,21 +149,27 @@ namespace WebApplication1.Controllers
 
             // If successful, try to get last row of data
             List<string> lastRowArr;
-            HttpWebRequest rowRequest = WebRequest.Create(GEOG_IDEAS_AIRSTRIP_LINK) as HttpWebRequest;
-            rowRequest.AddRange(contentLength - NUM_SENSOR_ROW_BYTES, contentLength - 1);
+            HttpWebRequest rowRequest = WebRequest.Create(GEOG_IDEAS_AIRSTRIP.HTTP_ADDRESS) as HttpWebRequest;
+            rowRequest.AddRange(contentLength - GEOG_IDEAS_AIRSTRIP.NUM_BYTES, contentLength - 1);
             using (WebResponse resp = rowRequest.GetResponse())
             {
                 StreamReader readStream = new StreamReader(resp.GetResponseStream());
                 string read = readStream.ReadToEnd();
-                List<string> rows = new List<string>(read.Split(new string[] { "\r\n" }, StringSplitOptions.None));
+                List<string> rows = Regex.Split(read, "\r\n").ToList();
                 rows.RemoveAll(item => item.Length == 0);
                 lastRowArr = new List<string>(rows.Last().Split(','));
             }
 
-            // If row was successfully parsed, generate number from it
-            if (lastRowArr.Count == NUM_SENSOR_ROW_ELEMENTS)
+            if (lastRowArr.Count == GEOG_IDEAS_AIRSTRIP.NUM_ELEMENTS)
             {
-                List<float> explanatoryVars = new List<float> { 1.0f, 2.0f, 3.0f };
+                List<float> explanatoryVars = lastRowArr.Where((val, idx) => GEOG_IDEAS_AIRSTRIP.INDICES.Contains(idx))
+                                                        .Select(val => float.Parse(val))
+                                                        .ToList();
+                float responseVar = GEOG_IDEAS_AIRSTRIP.PARAMETERS[0] + Enumerable.Zip(explanatoryVars,
+                                                                                       GEOG_IDEAS_AIRSTRIP.PARAMETERS.Skip(1),
+                                                                                       (v, p) => v * p)
+                                                                                  .Sum();
+                return responseVar;
             }
             else
             {

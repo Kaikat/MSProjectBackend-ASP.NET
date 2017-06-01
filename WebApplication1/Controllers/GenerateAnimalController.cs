@@ -38,8 +38,10 @@ namespace WebApplication1.Controllers
         private SensorData GEOG_IDEAS_AIRSTRIP = new SensorData("http://aten.geog.ucsb.edu/Data/AirstripALL_table1.txt",
                                                                 512,
                                                                 51,
-                                                                new List<int>() { },
-                                                                new List<float> { });
+                                                                new List<int>() { 3 },
+                                                                new List<float> { 84.778318f, -0.831112f });
+        private float HEALTH_VARIANCE = 10.0f;
+
 
         public class GennedAnimalData
         {
@@ -169,6 +171,8 @@ namespace WebApplication1.Controllers
                                                                                        GEOG_IDEAS_AIRSTRIP.PARAMETERS.Skip(1),
                                                                                        (v, p) => v * p)
                                                                                   .Sum();
+                responseVar += (Random.Next(-100, 100) / 100.0f) * HEALTH_VARIANCE;
+                responseVar = Math.Max(Math.Min(responseVar, 100), 0);
                 return responseVar;
             }
             else

@@ -1,4 +1,5 @@
 AirstripAllData <- read.delim("AirstripALL_table1.txt", header = TRUE)
+airstrip <- read.csv("AirstripALL_table1.csv")
 
 #Removing uneeded columns
 NewAirData <- subset(AirstripAllData, select = -c(52:101))

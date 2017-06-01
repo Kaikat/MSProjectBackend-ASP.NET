@@ -6,11 +6,15 @@ using System.Net.Http;
 using System.Web.Http;
 
 using System.Data.SqlClient;
+using System.IO;
 
 namespace WebApplication1.Controllers
 {
     public class GenerateAnimalController : ApiController
     {
+        private const string GEOG_IDEAS_AIRSTRIP_LINK = "http://aten.geog.ucsb.edu/Data/AirstripALL_table1.txt";
+        private const int NUM_SENSOR_ROW_BYTES = 512;
+        private const int NUM_SENSOR_ROW_ELEMENTS = 51;
         public class GennedAnimalData
         {
             public string animal_species;
@@ -99,6 +103,46 @@ namespace WebApplication1.Controllers
         private float CalculateBiomagnificationFactor(string species)
         {
             return Random.Next(0, 200) / 200.0f;
+        }
+
+        // Calculate health factor using linear model on sensor data, where last row of online text file is pulled
+        // http://aten.geog.ucsb.edu/Data/AirstripALL_table1.txt
+        // the post is temporary -- for testing
+        [HttpPost]
+        public float CalculateHealthFactorFromSensor()
+        {
+            // Get length of file
+            int contentLength = 0;
+
+            WebRequest lengthRequest = WebRequest.Create(GEOG_IDEAS_AIRSTRIP_LINK);
+            lengthRequest.Method = "HEAD";
+            using (WebResponse resp = lengthRequest.GetResponse())
+            {
+                int.TryParse(resp.Headers.Get("Content-Length"), out contentLength);
+            }
+
+            // If successful, try to get last row of data
+            List<string> lastRowArr;
+            HttpWebRequest rowRequest = WebRequest.Create(GEOG_IDEAS_AIRSTRIP_LINK) as HttpWebRequest;
+            rowRequest.AddRange(contentLength - NUM_SENSOR_ROW_BYTES, contentLength - 1);
+            using (WebResponse resp = rowRequest.GetResponse())
+            {
+                StreamReader readStream = new StreamReader(resp.GetResponseStream());
+                string read = readStream.ReadToEnd();
+                List<string> rows = new List<string>(read.Split(new string[] { "\r\n" }, StringSplitOptions.None));
+                rows.RemoveAll(item => item.Length == 0);
+                lastRowArr = new List<string>(rows.Last().Split(','));
+            }
+
+            // If row was successfully parsed, generate number from it
+            if (lastRowArr.Count == NUM_SENSOR_ROW_ELEMENTS)
+            {
+                List<float> explanatoryVars = new List<float> { 1.0f, 2.0f, 3.0f };
+            }
+            else
+            {
+                return Random.Next(0, 100) / 100.0f;
+            }
         }
     }
 }

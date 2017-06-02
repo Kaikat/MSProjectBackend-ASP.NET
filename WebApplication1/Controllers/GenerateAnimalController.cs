@@ -13,36 +13,6 @@ namespace WebApplication1.Controllers
 {
     public class GenerateAnimalController : ApiController
     {
-        /**
-         Struct containing address relevant for data for sensor.
-         PARAMETERS reference the beta parameters of a linear regression model, and
-         should contain one more element than INDICES due to the intercept parameter (Beta_0).
-        */
-        private struct SensorData
-        {
-            public string HTTP_ADDRESS;
-            public int NUM_BYTES;
-            public int NUM_ELEMENTS;
-            public List<int> INDICES;
-            public List<float> PARAMETERS;
-
-            public SensorData(string httpAddress, int numBytes, int numElements, List<int> indices, List<float> parameters)
-            {
-                HTTP_ADDRESS = httpAddress;
-                NUM_BYTES = numBytes;
-                NUM_ELEMENTS = numElements;
-                INDICES = indices;
-                PARAMETERS = parameters;
-            }
-        }
-        private SensorData GEOG_IDEAS_AIRSTRIP = new SensorData("http://aten.geog.ucsb.edu/Data/AirstripALL_table1.txt",
-                                                                512,
-                                                                51,
-                                                                new List<int>() { 3 },
-                                                                new List<float> { 84.778318f, -0.831112f });
-        private float HEALTH_VARIANCE = 10.0f;
-
-
         public class GennedAnimalData
         {
             public string animal_species;
@@ -139,11 +109,48 @@ namespace WebApplication1.Controllers
         [HttpPost]
         public float CalculateHealthFactorFromSensor()
         {
+            return SensorCalculation.CalculateHealth();
+        }
+    }
+
+    public static class SensorCalculation
+    {
+        /**
+         Struct containing address relevant for data for sensor.
+         PARAMETERS reference the beta parameters of a linear regression model, and
+         should contain one more element than INDICES due to the intercept parameter (Beta_0).
+        */
+        private struct SensorData
+        {
+            public string HTTP_ADDRESS;
+            public int NUM_BYTES;
+            public int NUM_ELEMENTS;
+            public List<int> INDICES;
+            public List<float> PARAMETERS;
+
+            public SensorData(string httpAddress, int numBytes, int numElements, List<int> indices, List<float> parameters)
+            {
+                HTTP_ADDRESS = httpAddress;
+                NUM_BYTES = numBytes;
+                NUM_ELEMENTS = numElements;
+                INDICES = indices;
+                PARAMETERS = parameters;
+            }
+        }
+        private static SensorData GEOG_IDEAS_AIRSTRIP = new SensorData("http://aten.geog.ucsb.edu/Data/AirstripALL_table1.txt",
+                                                                512,
+                                                                51,
+                                                                new List<int>() { 3 },
+                                                                new List<float> { 84.778318f, -0.831112f });
+        private static float HEALTH_VARIANCE = 10.0f;
+
+        public static float CalculateHealth()
+        {
             // Get length of file
             int contentLength = 0;
 
             WebRequest lengthRequest = WebRequest.Create(GEOG_IDEAS_AIRSTRIP.HTTP_ADDRESS);
-            lengthRequest.Method = "HEAD";
+            lengthRequest.Method = WebRequestMethods.Http.Head;
             using (WebResponse resp = lengthRequest.GetResponse())
             {
                 int.TryParse(resp.Headers.Get("Content-Length"), out contentLength);
@@ -162,6 +169,7 @@ namespace WebApplication1.Controllers
                 lastRowArr = new List<string>(rows.Last().Split(','));
             }
 
+            Random random = new Random();
             if (lastRowArr.Count == GEOG_IDEAS_AIRSTRIP.NUM_ELEMENTS)
             {
                 List<float> explanatoryVars = lastRowArr.Where((val, idx) => GEOG_IDEAS_AIRSTRIP.INDICES.Contains(idx))
@@ -171,13 +179,13 @@ namespace WebApplication1.Controllers
                                                                                        GEOG_IDEAS_AIRSTRIP.PARAMETERS.Skip(1),
                                                                                        (v, p) => v * p)
                                                                                   .Sum();
-                responseVar += (Random.Next(-100, 100) / 100.0f) * HEALTH_VARIANCE;
+                responseVar += (random.Next(-100, 100) / 100.0f) * HEALTH_VARIANCE;
                 responseVar = Math.Max(Math.Min(responseVar, 100), 0);
                 return responseVar;
             }
             else
             {
-                return Random.Next(0, 100) / 100.0f;
+                return random.Next(0, 100) / 100.0f;
             }
         }
     }

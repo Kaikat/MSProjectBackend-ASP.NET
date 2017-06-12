@@ -15,5 +15,6 @@ namespace WebApplication1.Controllers
         Working_With_Hands,
         Entertainment,
         Social_Issues,
+        Writing,
     }
 }

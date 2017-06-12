@@ -10,10 +10,10 @@ namespace WebApplication1.Controllers
         Athletics,
         Biology,
         Chemistry,
-        CollegeOfCreativeStudies,
         Communications,
         ComputerScience,
         Counseling,
+        Dance,
         EarthSciences,
         Education,
         EnvironmentalScience,
@@ -27,6 +27,6 @@ namespace WebApplication1.Controllers
         Physics,
         Psychology,
         Sociology,
-        TheaterAndDance,
+        Theater,
     }
 }

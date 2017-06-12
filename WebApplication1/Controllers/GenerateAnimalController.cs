@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
-using System.Net.Http;
 using System.Web.Http;
 
 using System.Data.SqlClient;
@@ -95,6 +94,33 @@ namespace WebApplication1.Controllers
 
         private float CalculateHealthFactor2(string species)
         {
+            Enum.TryParse(species, out AnimalSpecies speciesEnum);
+            var ageDict = new Dictionary<AnimalSpecies, Tuple<float, float>>()
+            {
+                { AnimalSpecies.Tiger,        new Tuple<float,float>(1,2)},
+                { AnimalSpecies.Butterfly,    new Tuple<float,float>(1,2)},
+                { AnimalSpecies.Horse,        new Tuple<float,float>(1,2)},
+                { AnimalSpecies.Heron,        new Tuple<float,float>(1,2)},
+                { AnimalSpecies.Wind,         new Tuple<float,float>(1,2)},
+                { AnimalSpecies.Bat,          new Tuple<float,float>(1,2)},
+                { AnimalSpecies.Lizard,       new Tuple<float,float>(1,2)},
+                { AnimalSpecies.Rattlesnake,  new Tuple<float,float>(1,2)},
+                { AnimalSpecies.Death,        new Tuple<float,float>(1,2)},
+                { AnimalSpecies.Deer,         new Tuple<float,float>(1,2)},
+                { AnimalSpecies.Rabbit,       new Tuple<float,float>(1,2)},
+                { AnimalSpecies.Water,        new Tuple<float,float>(1,2)},
+                { AnimalSpecies.Coyote,       new Tuple<float,float>(1,2)},
+                { AnimalSpecies.Squirrel,     new Tuple<float,float>(1,2)},
+                { AnimalSpecies.Acorn,        new Tuple<float,float>(1,2)},
+                { AnimalSpecies.Dragonfly,    new Tuple<float,float>(1,2)},
+                { AnimalSpecies.Mountainlion, new Tuple<float,float>(1,2)},
+                { AnimalSpecies.Redtailedhawk,new Tuple<float,float>(1,2)},
+                { AnimalSpecies.Dolphin,      new Tuple<float,float>(1,2)},
+                { AnimalSpecies.Earth,        new Tuple<float,float>(1,2)},
+                { AnimalSpecies.Shark,        new Tuple<float,float>(1,2)},
+                { AnimalSpecies.Rain,         new Tuple<float,float>(1,2)},
+                { AnimalSpecies.Datura,       new Tuple<float,float>(1,2)},
+            };
             return Random.Next(0, 100) / 100.0f;
         }
 

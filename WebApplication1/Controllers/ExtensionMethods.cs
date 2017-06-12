@@ -36,5 +36,10 @@ namespace WebApplication1.Controllers
         {
             return float.Parse(readerObject.ToString());
         }
+
+        public static T ToEnum<T>(this string enumString) where T : struct, IConvertible
+        {
+            return (T)Enum.Parse(typeof(T), enumString);
+        }
     }
 }

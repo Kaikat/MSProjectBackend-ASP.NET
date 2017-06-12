@@ -184,12 +184,16 @@
     <Compile Include="Controllers\ExtensionMethods.cs" />
     <Compile Include="Controllers\GenerateAnimalController.cs" />
     <Compile Include="Controllers\HomeController.cs" />
+    <Compile Include="Controllers\Interest.cs" />
+    <Compile Include="Controllers\Location.cs" />
     <Compile Include="Controllers\LocationsController.cs" />
     <Compile Include="Controllers\LoginController.cs" />
+    <Compile Include="Controllers\Major.cs" />
     <Compile Include="Controllers\NotifyAnimalEncounterController.cs" />
     <Compile Include="Controllers\PlayerAnimalsController.cs" />
     <Compile Include="Controllers\PlayerController.cs" />
     <Compile Include="Controllers\QueryBuilder.cs" />
+    <Compile Include="Controllers\RecommendationController.cs" />
     <Compile Include="Controllers\Utilities.cs" />
     <Compile Include="Controllers\ValuesController.cs" />
     <Compile Include="Global.asax.cs">
@@ -270,6 +274,9 @@
     <Content Include="Scripts\jquery-1.10.2.min.map" />
   </ItemGroup>
   <ItemGroup>
+    <PackageReference Include="NReco.Recommender">
+      <Version>1.0.1</Version>
+    </PackageReference>
     <PackageReference Include="System.Data.SqlClient" Version="4.3.0" />
   </ItemGroup>
   <PropertyGroup>

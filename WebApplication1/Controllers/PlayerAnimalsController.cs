@@ -78,7 +78,7 @@ namespace WebApplication1.Controllers
                "SELECT * FROM Discovered_Animals " +
                "INNER JOIN Sessions ON Sessions.username = Discovered_Animals.username " +
                "WHERE Sessions.session_key = @sessionKey;"
-           );
+            );
             query.Parameters.AddWithValue("@sessionKey", session_key);
             Database.Connect();
 

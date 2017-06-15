@@ -275,9 +275,6 @@
     <Content Include="Scripts\jquery-1.10.2.min.map" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="NReco.Recommender">
-      <Version>1.0.1</Version>
-    </PackageReference>
     <PackageReference Include="System.Data.SqlClient" Version="4.3.0" />
   </ItemGroup>
   <PropertyGroup>

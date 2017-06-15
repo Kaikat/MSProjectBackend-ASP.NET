@@ -6,15 +6,6 @@ using System.Net.Http;
 using System.Web.Http;
 
 using System.Data.SqlClient;
-using NReco.CF.Taste.Model;
-using NReco.CF.Taste.Common;
-using NReco.CF.Taste.Impl.Common;
-using NReco.CF.Taste.Impl.Model;
-
-using NReco.CF.Taste.Impl.Recommender;
-using NReco.CF.Taste.Neighborhood;
-using NReco.CF.Taste.Impl.Neighborhood;
-using NReco.CF.Taste.Impl.Similarity;
 
 namespace WebApplication1.Controllers
 {
@@ -76,26 +67,12 @@ namespace WebApplication1.Controllers
         {
             List<MajorPreference> majorMatches = new List<MajorPreference>();
             majorMatches = GetTopMajorMatchesForPlayer(username, TOP_X_MAJORS);
-            /*Object obj = "hull";
-            try
-            {
-                //majorMatches.AddRange(GetRecommendedMajors(username));
-                obj = GetRecommendedMajors(username);
-            }
-            catch (Exception e)
-            {
-                return "ERROR: " + e.Message + " " + (string) obj;
-            }
-            //List<Location> locationsToVisit = GetMajorLocations(majorMatches);
-            return (string)obj;//
-            */
             return majorMatches;
         }
 
         //////////////////////////////////////////////////////////////////////////////
         // Functions for getting the majors that match the player's preferences best
         //////////////////////////////////////////////////////////////////////////////
-
         private List<MajorPreference> GetTopMajorMatchesForPlayer(string username, int topXscores)
         {
             MajorInterestsTable majorsTable = new MajorInterestsTable();
@@ -161,88 +138,6 @@ namespace WebApplication1.Controllers
             }
 
             return index;
-        }
-
-        //////////////////////////////////////////////////////////////////////////////
-        // Functions for recommending majors to a player based on other player's
-        // preferences who are similar to them
-        //////////////////////////////////////////////////////////////////////////////
-        public class UserDataModel
-        {
-            public IDataModel DataModel;
-            public long UserID;
-
-            public UserDataModel()
-            {
-                UserID = 0;
-            }
-        }
-
-        private Object //List<MajorPreference> 
-            GetRecommendedMajors(string username)
-        {
-            const int NEAREST_NEIGHBORS = 5;
-            const int NUMBER_OF_RECOMMENDATIONS = 2;
-            List<MajorPreference> recommendedMajors = new List<MajorPreference>();
-            Object dataModel = Load(username);
-            /*
-            PearsonCorrelationSimilarity pearsonSimilarity = new PearsonCorrelationSimilarity(dataModel.DataModel);
-            GenericUserSimilarity userSimilarity = new GenericUserSimilarity(pearsonSimilarity, dataModel.DataModel);
-            NearestNUserNeighborhood userNeighborhood = new NearestNUserNeighborhood(NEAREST_NEIGHBORS, userSimilarity, dataModel.DataModel);
-            userNeighborhood.GetUserNeighborhood(dataModel.UserID);
-            GenericUserBasedRecommender recommender = new GenericUserBasedRecommender(dataModel.DataModel, userNeighborhood, userSimilarity);
-            var recommendedUsers = recommender.Recommend(dataModel.UserID, NUMBER_OF_RECOMMENDATIONS);
-            */
-            // return recommendedMajors;
-            return dataModel;// recommendedUsers;
-        }
-
-
-        private Object Load(string username)
-        {
-            UserDataModel userDataModel = new UserDataModel();
-
-            long userID = 0;
-            FastByIDMap<IList<IPreference>> data = new FastByIDMap<IList<IPreference>>();
-            SqlCommand query = new SqlCommand("SELECT * FROM Player_Interests");
-            Database.Connect();
-            SqlDataReader reader = Database.Query(query);
-
-            //string debugger = "";
-            while (reader.Read())
-            {
-                long interestID = Convert.ToInt64(reader["interest"].ToString().ToEnum<Interest>());
-                //debugger += interestID.ToString() + ", ";
-                //debugger += reader["interest"].ToString().ToEnum<Interest>().ToString();
-                if (reader["username"].ToString() == username)
-                {
-                    userDataModel.UserID = userID;
-                }
-
-                IList<IPreference> userPreferences = data.Get(userID);
-                if (userPreferences == null)
-                {
-                    userPreferences = new List<IPreference>(Enum.GetNames(typeof(Interest)).Length);
-                    data.Put(userID, userPreferences);
-                }
-
-                float interestValue = reader["preference_value"].ToFloat();
-                userPreferences.Add(new GenericPreference(userID, interestID, interestValue));
-                userID++;
-            }
-
-             Database.Disconnect();
-            
-             var newData = new FastByIDMap<IPreferenceArray>(data.Count());
-             foreach (var entry in data.EntrySet())
-             {
-                 var prefList = (List<IPreference>)entry.Value;
-                 newData.Put(entry.Key, (IPreferenceArray)new GenericUserPreferenceArray(prefList));
-             }
-
-             userDataModel.DataModel = new GenericDataModel(newData);
-             return userDataModel;
-             //return "grr";
         }
 
         private List<Location> GetMajorLocations(List<MajorPreference> majors)

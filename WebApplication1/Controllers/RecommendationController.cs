@@ -39,13 +39,11 @@ namespace WebApplication1.Controllers
 
         public class MajorLocation
         {
-            //Dictionary<Major, string> MajorLocations;
             public MajorPreference MajorPreference;
             public string Location;
 
             public MajorLocation(MajorPreference majorPreference, string location)
             {
-                //MajorLocations = GetMajorLocations();
                 MajorPreference = majorPreference;
                 Location = location;
             } 
@@ -55,15 +53,13 @@ namespace WebApplication1.Controllers
         public Object GetRecommendedList([FromUri]string username)
         {
             List<MajorPreference> majorMatches = new List<MajorPreference>();
-            //majorMatches = GetTopMajorMatchesForPlayer(username, TOP_X_MAJORS);
-            return GetTopMajorMatchesForPlayer(username, TOP_X_MAJORS); //majorMatches;
+            return MapMajorsToLocations(GetTopMajorMatchesForPlayer(username, TOP_X_MAJORS));
         }
 
         //////////////////////////////////////////////////////////////////////////////
         // Functions for getting the majors that match the player's preferences best
         //////////////////////////////////////////////////////////////////////////////
-        private //List<MajorPreference>
-            Object GetTopMajorMatchesForPlayer(string username, int topXscores)  
+        private List<MajorPreference> GetTopMajorMatchesForPlayer(string username, int topXscores)  
         {
             Interests playerInterestsFromDB = GetPlayerInterests(username);
             List<MajorPreference> playerPreferenceValues = new List<MajorPreference>();
@@ -93,44 +89,7 @@ namespace WebApplication1.Controllers
             }
             playerPreferenceValues.Sort((y, x) => (x.Value).CompareTo(y.Value));
             int topXscoreIndex = GetTopXIndex(playerPreferenceValues, topXscores);
-            //return playerPreferenceValues.GetRange(0, topXscoreIndex);
-            //return playerPreferenceValues;
-
-            //Map majors to locations
-            return MapMajorsToLocations(playerPreferenceValues.GetRange(0, topXscoreIndex));
-
-            /*foreach (Major major in arrayOfMajors)
-             {
-                 float majorInterestValue = 0.0f;
-                 float totalInterestsForMajor = 0.0f;
-
-                 foreach (Interest interest in majorsTable.InterestsFor[major].Preference.Keys)
-                 {
-                     totalInterestsForMajor += majorsTable.InterestsFor[major].Preference[interest];
-                     majorInterestValue += playerInterestsFromDB.Preference[interest] * majorsTable.InterestsFor[major].Preference[interest];
-                 }
-
-                 playerPreferenceValues.Add(new MajorPreference(major, (float)majorInterestValue / (float)totalInterestsForMajor));
-             }
-
-             playerPreferenceValues.Sort((y, x) => (x.Value).CompareTo(y.Value));
-             int topXscoreIndex = GetTopXIndex(playerPreferenceValues, topXscores);
-             return playerPreferenceValues.GetRange(0, topXscoreIndex);*/
-        }
-
-        private Object MapMajorsToLocations(List<MajorPreference> majorPreferences)
-        {
-            Dictionary<Major, List<string>> allMajorLocations = GetMajorLocations();
-            List<MajorLocation> majorLocations = new List<MajorLocation>();
-            foreach(MajorPreference preference in majorPreferences)
-            {
-                List<string> locations = allMajorLocations[preference.Major.ToEnum<Major>()];
-                foreach (string location in locations)
-                {
-                    majorLocations.Add(new MajorLocation(preference, location));
-                }
-            }
-            return majorLocations;
+            return playerPreferenceValues.GetRange(0, topXscoreIndex);
         }
 
         private Interests GetPlayerInterests(string username)
@@ -173,7 +132,9 @@ namespace WebApplication1.Controllers
             return index;
         }
 
-
+        //////////////////////////////////////////////////////////////////////////////
+        // Functions for mapping majors to locations
+        //////////////////////////////////////////////////////////////////////////////
         private Dictionary<Major, List<string>> GetMajorLocations()
         {
             Dictionary<Major, List<string>> majorLocations = new Dictionary<Major, List<string>>();
@@ -195,6 +156,21 @@ namespace WebApplication1.Controllers
                 majorLocations[majorKey].Add(reader["Location_Name"].ToString());
             }
             Database.Disconnect();
+            return majorLocations;
+        }
+
+        private List<MajorLocation> MapMajorsToLocations(List<MajorPreference> majorPreferences)
+        {
+            Dictionary<Major, List<string>> allMajorLocations = GetMajorLocations();
+            List<MajorLocation> majorLocations = new List<MajorLocation>();
+            foreach (MajorPreference preference in majorPreferences)
+            {
+                List<string> locations = allMajorLocations[preference.Major.ToEnum<Major>()];
+                foreach (string location in locations)
+                {
+                    majorLocations.Add(new MajorLocation(preference, location));
+                }
+            }
             return majorLocations;
         }
     }

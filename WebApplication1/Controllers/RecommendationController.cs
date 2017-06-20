@@ -37,6 +37,20 @@ namespace WebApplication1.Controllers
             }
         }
 
+        public class MajorLocation
+        {
+            //Dictionary<Major, string> MajorLocations;
+            public MajorPreference MajorPreference;
+            public string Location;
+
+            public MajorLocation(MajorPreference majorPreference, string location)
+            {
+                //MajorLocations = GetMajorLocations();
+                MajorPreference = majorPreference;
+                Location = location;
+            } 
+        }
+
         [HttpGet]
         public Object GetRecommendedList([FromUri]string username)
         {
@@ -80,9 +94,12 @@ namespace WebApplication1.Controllers
             playerPreferenceValues.Sort((y, x) => (x.Value).CompareTo(y.Value));
             int topXscoreIndex = GetTopXIndex(playerPreferenceValues, topXscores);
             //return playerPreferenceValues.GetRange(0, topXscoreIndex);
-            return playerPreferenceValues;
+            //return playerPreferenceValues;
 
-            /* foreach (Major major in arrayOfMajors)
+            //Map majors to locations
+            return MapMajorsToLocations(playerPreferenceValues.GetRange(0, topXscoreIndex));
+
+            /*foreach (Major major in arrayOfMajors)
              {
                  float majorInterestValue = 0.0f;
                  float totalInterestsForMajor = 0.0f;
@@ -99,6 +116,21 @@ namespace WebApplication1.Controllers
              playerPreferenceValues.Sort((y, x) => (x.Value).CompareTo(y.Value));
              int topXscoreIndex = GetTopXIndex(playerPreferenceValues, topXscores);
              return playerPreferenceValues.GetRange(0, topXscoreIndex);*/
+        }
+
+        private Object MapMajorsToLocations(List<MajorPreference> majorPreferences)
+        {
+            Dictionary<Major, List<string>> allMajorLocations = GetMajorLocations();
+            List<MajorLocation> majorLocations = new List<MajorLocation>();
+            foreach(MajorPreference preference in majorPreferences)
+            {
+                List<string> locations = allMajorLocations[preference.Major.ToEnum<Major>()];
+                foreach (string location in locations)
+                {
+                    majorLocations.Add(new MajorLocation(preference, location));
+                }
+            }
+            return majorLocations;
         }
 
         private Interests GetPlayerInterests(string username)
@@ -141,10 +173,28 @@ namespace WebApplication1.Controllers
             return index;
         }
 
-        private List<Location> GetMajorLocations(List<MajorPreference> majors)
-        {
-            List<Location> majorLocations = new List<Location>();
 
+        private Dictionary<Major, List<string>> GetMajorLocations()
+        {
+            Dictionary<Major, List<string>> majorLocations = new Dictionary<Major, List<string>>();
+            SqlCommand query = new SqlCommand(
+                "SELECT majors.Major, GPS_Locations.Location_Name " +
+                "FROM Major_Locations AS majors " +
+                "INNER JOIN GPS_Locations ON GPS_Locations.location_id = majors.location_id"
+            );
+            Database.Connect();
+            SqlDataReader reader = Database.Query(query);
+            while (reader.Read())
+            {
+                Major majorKey = reader["Major"].ToString().ToEnum<Major>();
+                if (!majorLocations.ContainsKey(majorKey))
+                {
+                    majorLocations[majorKey] = new List<string>();
+                }
+
+                majorLocations[majorKey].Add(reader["Location_Name"].ToString());
+            }
+            Database.Disconnect();
             return majorLocations;
         }
     }

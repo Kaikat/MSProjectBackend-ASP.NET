@@ -6,7 +6,7 @@ namespace WebApplication1.Controllers
         Working_With_Children,
         Nature_And_Outdoors,
         How_People_Think,
-        Design_Style,
+        Design_And_Style,
         Helping_Others,
         Gadgets_And_Experiments,
         Animals,

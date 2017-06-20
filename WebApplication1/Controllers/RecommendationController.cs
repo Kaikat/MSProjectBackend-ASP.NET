@@ -16,33 +16,6 @@ namespace WebApplication1.Controllers
         Database Database = new Database();
         const int TOP_X_MAJORS = 5;
 
-        /*public class MajorInterestsTable
-        {
-            Database Database = new Database();
-            public Dictionary<Major, Interests> InterestsFor;
-
-            public MajorInterestsTable()
-            {
-                InterestsFor = new Dictionary<Major, Interests>();
-
-                SqlCommand query = new SqlCommand("SELECT * FROM Major_Interests");
-                Database.Connect();
-                SqlDataReader reader = Database.Query(query);
-                while (reader.Read())
-                {
-                    Major major = reader["Major"].ToString().ToEnum<Major>();
-                    if (!InterestsFor.ContainsKey(major))
-                    {
-                        InterestsFor.Add(major, new Interests());
-                    }
-
-                    InterestsFor[major].Preference.Add(reader["Interest"].ToString().ToEnum<Interest>(), reader["Interest_Value"].ToFloat()); 
-                }
-
-                Database.Disconnect();
-            }
-        }*/
-
         public class Interests
         {
             public Dictionary<Interest, float> Preference;
@@ -78,13 +51,10 @@ namespace WebApplication1.Controllers
         private //List<MajorPreference>
             Object GetTopMajorMatchesForPlayer(string username, int topXscores)  
         {
-            //MajorInterestsTable majorsTable = new MajorInterestsTable();
             Interests playerInterestsFromDB = GetPlayerInterests(username);
-
             List<MajorPreference> playerPreferenceValues = new List<MajorPreference>();
             Array arrayOfMajors = (Major[])Enum.GetValues(typeof(Major));
             Array arrayOfInterests = (Interest[])Enum.GetValues(typeof(Interest));
-
             try
             {
                 foreach (Major major in arrayOfMajors)
@@ -98,13 +68,11 @@ namespace WebApplication1.Controllers
 
                         double lowValue = weight < 0 ? weight * 5.0 : weight * 1.0;
                         double highValue = weight > 0 ? weight * 5.0 : weight * 1.0;
-                        highestValue += highValue;//highValue > highestValue ? highValue : highestValue;
-                        lowestValue += lowValue;//lowValue < lowestValue ? lowValue : lowestValue;
+                        highestValue += highValue;
+                        lowestValue += lowValue;
 
                         majorValue += Convert.ToDouble(playerInterestsFromDB.Preference[interest]) *
                             Weights.Matrix[Convert.ToInt32(interest)][Convert.ToInt32(major)];
-                        //oldMajorValue = ((majorValue - lowestValue) / (highestValue - lowestValue)) + 1.0;
-                        //majorValue += oldMajorValue;
                     }
                     
                     majorValue = ((majorValue - lowestValue) / (highestValue - lowestValue));

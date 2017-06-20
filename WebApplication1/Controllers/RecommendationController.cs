@@ -55,47 +55,33 @@ namespace WebApplication1.Controllers
             List<MajorPreference> playerPreferenceValues = new List<MajorPreference>();
             Array arrayOfMajors = (Major[])Enum.GetValues(typeof(Major));
             Array arrayOfInterests = (Interest[])Enum.GetValues(typeof(Interest));
-            try
+
+            foreach (Major major in arrayOfMajors)
             {
-                foreach (Major major in arrayOfMajors)
+                double majorValue = 0.0;
+                double highestValue = 0.0;
+                double lowestValue = 0.0;
+                foreach (Interest interest in arrayOfInterests)
                 {
-                    double majorValue = 0.0;
-                    double highestValue = 0.0;
-                    double lowestValue = 0.0;
-                    foreach (Interest interest in arrayOfInterests)
-                    {
-                        double weight = Weights.Matrix[Convert.ToInt32(interest)][Convert.ToInt32(major)];
+                    double weight = Weights.Matrix[Convert.ToInt32(interest)][Convert.ToInt32(major)];
 
-                        double lowValue = weight < 0 ? weight * 5.0 : weight * 1.0;
-                        double highValue = weight > 0 ? weight * 5.0 : weight * 1.0;
-                        highestValue += highValue;
-                        lowestValue += lowValue;
+                    double lowValue = weight < 0 ? weight * 5.0 : weight * 1.0;
+                    double highValue = weight > 0 ? weight * 5.0 : weight * 1.0;
+                    highestValue += highValue;
+                    lowestValue += lowValue;
 
-                        majorValue += Convert.ToDouble(playerInterestsFromDB.Preference[interest]) *
-                            Weights.Matrix[Convert.ToInt32(interest)][Convert.ToInt32(major)];
-                    }
-                    
-                    majorValue = ((majorValue - lowestValue) / (highestValue - lowestValue));
-                    playerPreferenceValues.Add(new MajorPreference(major, majorValue));
+                    majorValue += Convert.ToDouble(playerInterestsFromDB.Preference[interest]) *
+                        Weights.Matrix[Convert.ToInt32(interest)][Convert.ToInt32(major)];
                 }
-                playerPreferenceValues.Sort((y, x) => (x.Value).CompareTo(y.Value));
-                int topXscoreIndex = GetTopXIndex(playerPreferenceValues, topXscores);
-                //return playerPreferenceValues.GetRange(0, topXscoreIndex);
-                return playerPreferenceValues;
+                    
+                majorValue = ((majorValue - lowestValue) / (highestValue - lowestValue));
+                playerPreferenceValues.Add(new MajorPreference(major, majorValue));
             }
-            catch(Exception e)
-            {
-                return e.Message;
-            }
-           /* try
-            {
-                return Weights.Matrix;
-            }
-            catch (Exception e)
-            {
-                return Weights.Matrix;
-                //return Directory.GetParent(Directory.GetCurrentDirectory()).Parent.FullName;//"Open File Error: " + e.Message;
-            }*/
+            playerPreferenceValues.Sort((y, x) => (x.Value).CompareTo(y.Value));
+            int topXscoreIndex = GetTopXIndex(playerPreferenceValues, topXscores);
+            //return playerPreferenceValues.GetRange(0, topXscoreIndex);
+            return playerPreferenceValues;
+
             /* foreach (Major major in arrayOfMajors)
              {
                  float majorInterestValue = 0.0f;

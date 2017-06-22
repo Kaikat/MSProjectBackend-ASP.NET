@@ -27,6 +27,11 @@ namespace WebApplication1.Controllers
             }
         }
 
+        public class RecommendationData
+        {
+            public List<MajorLocation> recommended_majors;
+        }
+
         public class MajorPreference
         {
             public string Major;
@@ -64,10 +69,12 @@ namespace WebApplication1.Controllers
         }
 
         [HttpGet]
-        public Object GetRecommendedList([FromUri]string username)
+        public RecommendationData GetRecommendedList([FromUri]string username)
         {
             List<MajorPreference> majorMatches = new List<MajorPreference>();
-            return MapMajorsToLocations(GetTopMajorMatchesForPlayer(username, TOP_X_MAJORS));
+            RecommendationData recommendationData = new RecommendationData();
+            recommendationData.recommended_majors = MapMajorsToLocations(GetTopMajorMatchesForPlayer(username, TOP_X_MAJORS));
+            return recommendationData;
         }
 
         [HttpPost]

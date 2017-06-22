@@ -8,6 +8,8 @@ using System.Web.Http;
 using System.Data.SqlClient;
 using System.IO;
 using System.Web;
+using Utilities;
+using System.Text;
 
 namespace WebApplication1.Controllers
 {
@@ -49,11 +51,80 @@ namespace WebApplication1.Controllers
             } 
         }
 
+        public class SurveyData
+        {
+            public string session_key;
+            public List<InterestData> interests;
+        }
+
+        public class InterestData
+        {
+            public string interest;
+            public int value;
+        }
+
         [HttpGet]
         public Object GetRecommendedList([FromUri]string username)
         {
             List<MajorPreference> majorMatches = new List<MajorPreference>();
             return MapMajorsToLocations(GetTopMajorMatchesForPlayer(username, TOP_X_MAJORS));
+        }
+
+        [HttpPost]
+        public Object SaveRatings([FromBody] SurveyData surveyData)
+        {
+            BasicResponse response = new BasicResponse();
+            response.error = true;
+
+            string username = GetUsername(surveyData.session_key);
+            if (username == string.Empty)
+            {
+                response.message = "Invalid session key";
+                return response;
+            }
+            List<Interest> arrayOfInterests = ((Interest[])Enum.GetValues(typeof(Interest))).Cast<Interest>().ToList();
+            StringBuilder queries = new StringBuilder();
+            string query = "INSERT INTO Player_Interests VALUES('{0}', '{1}', {2});";
+            for (int i = 0; i < surveyData.interests.Count; i++)
+            {
+                if (arrayOfInterests.Contains(surveyData.interests[i].interest.ToEnum<Interest>()))
+                {
+                    queries.Append(string.Format(query, username, surveyData.interests[i].interest, surveyData.interests[i].value));
+                }
+                else
+                {
+                    response.message = surveyData.interests[i].interest.ToString() + " is an invalid interest";
+                }
+            }
+
+            SqlCommand command = new SqlCommand(queries.ToString());
+            Database.Connect();
+            Database.Query(command);
+            Database.Disconnect();
+
+            response.error = false;
+            return response;
+        }
+
+        //////////////////////////////////////////////////////////////////////////////
+        // Get username from a session key
+        //////////////////////////////////////////////////////////////////////////////
+        private string GetUsername(string sessionKey)
+        {
+            string username = string.Empty;
+            SqlCommand query = new SqlCommand(
+                "SELECT username FROM Sessions " +
+                "WHERE session_key = @sessionKey");
+            query.Parameters.AddWithValue("@sessionKey", sessionKey);
+            Database.Connect();
+            SqlDataReader reader = Database.Query(query);
+            if (reader.HasRows)
+            {
+                reader.Read();
+                username = reader["username"].ToString();
+            }
+            Database.Disconnect();
+            return username;
         }
 
         //////////////////////////////////////////////////////////////////////////////

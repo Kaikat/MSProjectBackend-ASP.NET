@@ -89,7 +89,20 @@ namespace WebApplication1.Controllers
 
         private float CalculateHealthFactor1(string species)
         {
-            return Random.Next(0, 50) / 50.0f;
+            float healthFactor;
+            try
+            {
+                healthFactor = SensorCalculation.CalculateHealth();
+            }
+            catch (WebRequest.ConnectFailure e)
+            {
+                healthFactor = Random.Next(0, 50) / 50.0f;
+            }
+            catch (WebRequest.NameResolutionFailure e)
+            {
+                healthFactor = Random.Next(0, 50) / 50.0f;
+            }
+            return healthFactor;
         }
 
         private float CalculateHealthFactor2(string species)

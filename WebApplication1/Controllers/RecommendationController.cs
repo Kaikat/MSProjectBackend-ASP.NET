@@ -6,10 +6,10 @@ using System.Net.Http;
 using System.Web.Http;
 
 using System.Data.SqlClient;
-using NReco.CF.Taste.Model;
-using NReco.CF.Taste.Common;
-using NReco.CF.Taste.Impl.Common;
-using NReco.CF.Taste.Impl.Model;
+using System.IO;
+using System.Web;
+using Utilities;
+using System.Text;
 
 namespace WebApplication1.Controllers
 {
@@ -17,33 +17,6 @@ namespace WebApplication1.Controllers
     {
         Database Database = new Database();
         const int TOP_X_MAJORS = 5;
-
-        public class MajorInterestsTable
-        {
-            Database Database = new Database();
-            public Dictionary<Major, Interests> InterestsFor;
-
-            public MajorInterestsTable()
-            {
-                InterestsFor = new Dictionary<Major, Interests>();
-
-                SqlCommand query = new SqlCommand("SELECT * FROM Major_Interests");
-                Database.Connect();
-                SqlDataReader reader = Database.Query(query);
-                while (reader.Read())
-                {
-                    Major major = reader["Major"].ToString().ToEnum<Major>();
-                    if (!InterestsFor.ContainsKey(major))
-                    {
-                        InterestsFor.Add(major, new Interests());
-                    }
-
-                    InterestsFor[major].Preference.Add(reader["Interest"].ToString().ToEnum<Interest>(), reader["Interest_Value"].ToFloat()); 
-                }
-
-                Database.Disconnect();
-            }
-        }
 
         public class Interests
         {
@@ -54,61 +27,144 @@ namespace WebApplication1.Controllers
             }
         }
 
+        public class RecommendationData
+        {
+            public List<MajorLocation> recommended_majors;
+        }
+
         public class MajorPreference
         {
             public string Major;
-            public float Value;
+            public double Value;
 
-            public MajorPreference(Major major, float value)
+            public MajorPreference(Major major, double value)
             {
                 Major = major.ToString();
                 Value = value;
             }
         }
 
+        public class MajorLocation
+        {
+            public MajorPreference MajorPreference;
+            public string Location;
+
+            public MajorLocation(MajorPreference majorPreference, string location)
+            {
+                MajorPreference = majorPreference;
+                Location = location;
+            } 
+        }
+
+        public class SurveyData
+        {
+            public string session_key;
+            public List<InterestData> interests;
+        }
+
+        public class InterestData
+        {
+            public string interest;
+            public int value;
+        }
+
         [HttpGet]
-        public Object GetRecommendedList([FromUri]string username)
+        public RecommendationData GetRecommendedList([FromUri]string username)
         {
             List<MajorPreference> majorMatches = new List<MajorPreference>();
-            try
+            RecommendationData recommendationData = new RecommendationData();
+            recommendationData.recommended_majors = MapMajorsToLocations(GetTopMajorMatchesForPlayer(username, TOP_X_MAJORS));
+            return recommendationData;
+        }
+
+        [HttpPost]
+        public Object SaveRatings([FromBody] SurveyData surveyData)
+        {
+            BasicResponse response = new BasicResponse();
+            response.error = true;
+
+            string username = GetUsername(surveyData.session_key);
+            if (username == string.Empty)
             {
-                majorMatches = GetTopMajorMatchesForPlayer(username, TOP_X_MAJORS);
-                //majorMatches.AddRange(GetRecommendedMajors(username));
+                response.message = "Invalid session key";
+                return response;
             }
-            catch (Exception e)
+            List<Interest> arrayOfInterests = ((Interest[])Enum.GetValues(typeof(Interest))).Cast<Interest>().ToList();
+            StringBuilder queries = new StringBuilder();
+            string query = "INSERT INTO Player_Interests VALUES('{0}', '{1}', {2});";
+            for (int i = 0; i < surveyData.interests.Count; i++)
             {
-                return "ERROR: " + e.Message;
+                if (arrayOfInterests.Contains(surveyData.interests[i].interest.ToEnum<Interest>()))
+                {
+                    queries.Append(string.Format(query, username, surveyData.interests[i].interest, surveyData.interests[i].value));
+                }
+                else
+                {
+                    response.message = surveyData.interests[i].interest.ToString() + " is an invalid interest";
+                }
             }
-            //List<Location> locationsToVisit = GetMajorLocations(majorMatches);
-            return majorMatches;
+
+            SqlCommand command = new SqlCommand(queries.ToString());
+            Database.Connect();
+            Database.Query(command);
+            Database.Disconnect();
+
+            response.error = false;
+            return response;
+        }
+
+        //////////////////////////////////////////////////////////////////////////////
+        // Get username from a session key
+        //////////////////////////////////////////////////////////////////////////////
+        private string GetUsername(string sessionKey)
+        {
+            string username = string.Empty;
+            SqlCommand query = new SqlCommand(
+                "SELECT username FROM Sessions " +
+                "WHERE session_key = @sessionKey");
+            query.Parameters.AddWithValue("@sessionKey", sessionKey);
+            Database.Connect();
+            SqlDataReader reader = Database.Query(query);
+            if (reader.HasRows)
+            {
+                reader.Read();
+                username = reader["username"].ToString();
+            }
+            Database.Disconnect();
+            return username;
         }
 
         //////////////////////////////////////////////////////////////////////////////
         // Functions for getting the majors that match the player's preferences best
         //////////////////////////////////////////////////////////////////////////////
-
-        private List<MajorPreference> GetTopMajorMatchesForPlayer(string username, int topXscores)
+        private List<MajorPreference> GetTopMajorMatchesForPlayer(string username, int topXscores)  
         {
-            MajorInterestsTable majorsTable = new MajorInterestsTable();
             Interests playerInterestsFromDB = GetPlayerInterests(username);
-
             List<MajorPreference> playerPreferenceValues = new List<MajorPreference>();
             Array arrayOfMajors = (Major[])Enum.GetValues(typeof(Major));
             Array arrayOfInterests = (Interest[])Enum.GetValues(typeof(Interest));
+
             foreach (Major major in arrayOfMajors)
             {
-                float majorInterestValue = 0.0f;
-                float totalInterestsForMajor = 0.0f;
-
-                foreach (Interest interest in majorsTable.InterestsFor[major].Preference.Keys)
+                double majorValue = 0.0;
+                double highestValue = 0.0;
+                double lowestValue = 0.0;
+                foreach (Interest interest in arrayOfInterests)
                 {
-                    totalInterestsForMajor += majorsTable.InterestsFor[major].Preference[interest];
-                    majorInterestValue += playerInterestsFromDB.Preference[interest] * majorsTable.InterestsFor[major].Preference[interest];
+                    double weight = Weights.Matrix[Convert.ToInt32(interest)][Convert.ToInt32(major)];
+
+                    double lowValue = weight < 0 ? weight * 5.0 : weight * 1.0;
+                    double highValue = weight > 0 ? weight * 5.0 : weight * 1.0;
+                    highestValue += highValue;
+                    lowestValue += lowValue;
+
+                    majorValue += Convert.ToDouble(playerInterestsFromDB.Preference[interest]) *
+                        Weights.Matrix[Convert.ToInt32(interest)][Convert.ToInt32(major)];
                 }
-
-                playerPreferenceValues.Add(new MajorPreference(major, (float)majorInterestValue / (float)totalInterestsForMajor));
+                    
+                majorValue = ((majorValue - lowestValue) / (highestValue - lowestValue));
+                playerPreferenceValues.Add(new MajorPreference(major, majorValue));
             }
-
             playerPreferenceValues.Sort((y, x) => (x.Value).CompareTo(y.Value));
             int topXscoreIndex = GetTopXIndex(playerPreferenceValues, topXscores);
             return playerPreferenceValues.GetRange(0, topXscoreIndex);
@@ -139,10 +195,10 @@ namespace WebApplication1.Controllers
         private int GetTopXIndex(List<MajorPreference> majorPreferences, int topXscores)
         {
             int index = 0;
-            float oldValue = majorPreferences[0].Value;
+            double oldValue = majorPreferences[0].Value;
             for (int i = 1, numberOfDifferentValues = 0; i < majorPreferences.Count && numberOfDifferentValues < topXscores; i++)
             {
-                float currentValue = majorPreferences[i].Value;
+                double currentValue = majorPreferences[i].Value;
                 if (currentValue != oldValue)
                 {
                     numberOfDifferentValues++;
@@ -155,87 +211,44 @@ namespace WebApplication1.Controllers
         }
 
         //////////////////////////////////////////////////////////////////////////////
-        // Functions for recommending majors to a player based on other player's
-        // preferences who are similar to them
+        // Functions for mapping majors to locations
         //////////////////////////////////////////////////////////////////////////////
-        private List<MajorPreference> GetRecommendedMajors(string username)
+        private Dictionary<Major, List<string>> GetMajorLocations()
         {
-            List<MajorPreference> recommendedMajors = new List<MajorPreference>();
-
-            return recommendedMajors;
-        }
-
-
-        /*private IDataModel Load(string username)
-        {
-            int currentPlayerID = -1;
-
-            FastByIDMap<IList<IPreference>> data = new FastByIDMap<IList<IPreference>>();
-            SqlCommand query = new SqlCommand("SELECT * FROM Player_Interests");
+            Dictionary<Major, List<string>> majorLocations = new Dictionary<Major, List<string>>();
+            SqlCommand query = new SqlCommand(
+                "SELECT majors.Major, GPS_Locations.Location_Name " +
+                "FROM Major_Locations AS majors " +
+                "INNER JOIN GPS_Locations ON GPS_Locations.location_id = majors.location_id"
+            );
             Database.Connect();
             SqlDataReader reader = Database.Query(query);
-
-            int id = 0;
             while (reader.Read())
             {
-
-                id++;
-            }
-
-            Database.Disconnect();
-
-
-            var hasPrefVal = !String.IsNullOrEmpty(PrefValFld);
-
-            using (var dbRdr = SelectCmd.ExecuteReader())
-            {
-                while (dbRdr.Read())
+                Major majorKey = reader["Major"].ToString().ToEnum<Major>();
+                if (!majorLocations.ContainsKey(majorKey))
                 {
-                    long userID = Convert.ToInt64(dbRdr[UserIdFld]);
-                    long itemID = Convert.ToInt64(dbRdr[ItemIdFld]);
-
-                    var userPrefs = data.Get(userID);
-                    if (userPrefs == null)
-                    {
-                        userPrefs = new List<IPreference>(3);
-                        data.Put(userID, userPrefs);
-                    }
-
-                    if (hasPrefVal)
-                    {
-                        var prefVal = Convert.ToSingle(dbRdr[PrefValFld]);
-                        userPrefs.Add(new GenericPreference(userID, itemID, prefVal));
-                    }
-                    else
-                    {
-                        userPrefs.Add(new BooleanPreference(userID, itemID));
-                    }
+                    majorLocations[majorKey] = new List<string>();
                 }
 
+                majorLocations[majorKey].Add(reader["Location_Name"].ToString());
             }
+            Database.Disconnect();
+            return majorLocations;
+        }
 
-            var newData = new FastByIDMap<IPreferenceArray>(data.Count());
-            foreach (var entry in data.EntrySet())
-            {
-                var prefList = (List<IPreference>)entry.Value;
-                newData.Put(entry.Key, hasPrefVal ?
-                    (IPreferenceArray)new GenericUserPreferenceArray(prefList) :
-                    (IPreferenceArray)new BooleanUserPreferenceArray(prefList));
-            }
-            return new GenericDataModel(newData);
-        }*/
-
-
-
-
-
-
-
-
-        private List<Location> GetMajorLocations(List<MajorPreference> majors)
+        private List<MajorLocation> MapMajorsToLocations(List<MajorPreference> majorPreferences)
         {
-            List<Location> majorLocations = new List<Location>();
-
+            Dictionary<Major, List<string>> allMajorLocations = GetMajorLocations();
+            List<MajorLocation> majorLocations = new List<MajorLocation>();
+            foreach (MajorPreference preference in majorPreferences)
+            {
+                List<string> locations = allMajorLocations[preference.Major.ToEnum<Major>()];
+                foreach (string location in locations)
+                {
+                    majorLocations.Add(new MajorLocation(preference, location));
+                }
+            }
             return majorLocations;
         }
     }

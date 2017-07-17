@@ -16,6 +16,7 @@ namespace WebApplication1.Controllers
             public string name;
             public string avatar;
             public int currency;
+            public bool survey;
 
             public PlayerData(string playerName, string playerAvatar, int playerCurrency)
             {
@@ -43,6 +44,22 @@ namespace WebApplication1.Controllers
                 reader["avatar"].ToString(), Int32.Parse(reader["currency"].ToString()));
             Database.Disconnect();
 
+            SqlCommand query2 = new SqlCommand(
+                "SELECT * FROM Player_Interests " +
+                "INNER JOIN Sessions on Sessions.username = Player_Interests.username " +
+                "WHERE Sessions.session_key = @sessionKey;");
+            query2.Parameters.AddWithValue("@sessionKey", session_key);
+            Database.Connect();
+            SqlDataReader reader2 = Database.Query(query2);
+            if (!reader2.HasRows)
+            {
+                playerData.survey = false;
+            }
+            else
+            {
+                playerData.survey = true;
+            }
+            Database.Disconnect();
             return playerData;
         }
 

@@ -197,6 +197,7 @@
     <Compile Include="Controllers\Utilities.cs" />
     <Compile Include="Controllers\ValuesController.cs" />
     <Compile Include="Enums\AnimalSpecies.cs" />
+    <Compile Include="Controllers\Weights.cs" />
     <Compile Include="Global.asax.cs">
       <DependentUpon>Global.asax</DependentUpon>
     </Compile>
@@ -275,9 +276,6 @@
     <Content Include="Scripts\jquery-1.10.2.min.map" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="NReco.Recommender">
-      <Version>1.0.1</Version>
-    </PackageReference>
     <PackageReference Include="System.Data.SqlClient" Version="4.3.0" />
   </ItemGroup>
   <PropertyGroup>
@@ -294,7 +292,7 @@
     <VisualStudio>
       <FlavorProperties GUID="{349c5851-65df-11da-9384-00065b846f21}">
         <WebProjectProperties>
-          <UseIIS>True</UseIIS>
+          <UseIIS>False</UseIIS>
           <AutoAssignPort>True</AutoAssignPort>
           <DevelopmentServerPort>50099</DevelopmentServerPort>
           <DevelopmentServerVPath>/</DevelopmentServerVPath>

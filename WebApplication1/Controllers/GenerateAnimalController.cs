@@ -94,7 +94,7 @@ namespace WebApplication1.Controllers
 
         private float CalculateHealthFactor2(string species)
         {
-            Enum.TryParse(species, out AnimalSpecies speciesEnum);
+            AnimalSpecies speciesEnum = species.ToEnum<AnimalSpecies>();
             var ageDict = new Dictionary<AnimalSpecies, Tuple<float, float>>()
             {
                 { AnimalSpecies.Tiger,        new Tuple<float,float>(1,2)},
@@ -126,6 +126,33 @@ namespace WebApplication1.Controllers
 
         private float CalculateBiomagnificationFactor(string species)
         {
+            var biomagDict = new Dictionary<AnimalSpecies, int>()
+            {
+                { AnimalSpecies.Tiger,        0},
+                { AnimalSpecies.Butterfly,    0},
+                { AnimalSpecies.Horse,        0},
+                { AnimalSpecies.Heron,        0},
+                { AnimalSpecies.Wind,         0},
+                { AnimalSpecies.Bat,          0},
+                { AnimalSpecies.Lizard,       0},
+                { AnimalSpecies.Rattlesnake,  0},
+                { AnimalSpecies.Death,        0},
+                { AnimalSpecies.Deer,         0},
+                { AnimalSpecies.Rabbit,       0},
+                { AnimalSpecies.Water,        0},
+                { AnimalSpecies.Coyote,       0},
+                { AnimalSpecies.Squirrel,     0},
+                { AnimalSpecies.Acorn,        0},
+                { AnimalSpecies.Dragonfly,    0},
+                { AnimalSpecies.Mountainlion, 0},
+                { AnimalSpecies.Redtailedhawk,0},
+                { AnimalSpecies.Dolphin,      0},
+                { AnimalSpecies.Earth,        0},
+                { AnimalSpecies.Shark,        0},
+                { AnimalSpecies.Rain,         0},
+                { AnimalSpecies.Datura,       0},
+            };
+
             return Random.Next(0, 200) / 200.0f;
         }
 

@@ -16,7 +16,7 @@ namespace WebApplication1.Controllers
     public class RecommendationController : ApiController
     {
         Database Database = new Database();
-        const int TOP_X_MAJORS = 5;
+        const int TOP_X_MAJORS = 25;
 
         public class Interests
         {
@@ -69,11 +69,11 @@ namespace WebApplication1.Controllers
         }
 
         [HttpGet]
-        public RecommendationData GetRecommendedList([FromUri]string username)
+        public RecommendationData GetRecommendedList([FromUri]string session_key)
         {
             List<MajorPreference> majorMatches = new List<MajorPreference>();
             RecommendationData recommendationData = new RecommendationData();
-            recommendationData.recommended_majors = MapMajorsToLocations(GetTopMajorMatchesForPlayer(username, TOP_X_MAJORS));
+            recommendationData.recommended_majors = MapMajorsToLocations(GetTopMajorMatchesForPlayer(session_key, TOP_X_MAJORS));
             return recommendationData;
         }
 
@@ -137,9 +137,9 @@ namespace WebApplication1.Controllers
         //////////////////////////////////////////////////////////////////////////////
         // Functions for getting the majors that match the player's preferences best
         //////////////////////////////////////////////////////////////////////////////
-        private List<MajorPreference> GetTopMajorMatchesForPlayer(string username, int topXscores)  
+        private List<MajorPreference> GetTopMajorMatchesForPlayer(string sessionKey, int topXscores)  
         {
-            Interests playerInterestsFromDB = GetPlayerInterests(username);
+            Interests playerInterestsFromDB = GetPlayerInterests(sessionKey);
             List<MajorPreference> playerPreferenceValues = new List<MajorPreference>();
             Array arrayOfMajors = (Major[])Enum.GetValues(typeof(Major));
             Array arrayOfInterests = (Interest[])Enum.GetValues(typeof(Interest));
@@ -166,20 +166,20 @@ namespace WebApplication1.Controllers
                 playerPreferenceValues.Add(new MajorPreference(major, majorValue));
             }
             playerPreferenceValues.Sort((y, x) => (x.Value).CompareTo(y.Value));
-            int topXscoreIndex = GetTopXIndex(playerPreferenceValues, topXscores);
-            return playerPreferenceValues.GetRange(0, topXscoreIndex);
+            //int topXscoreIndex = GetTopXIndex(playerPreferenceValues, topXscores);
+            //return playerPreferenceValues.GetRange(0, topXscoreIndex);
+            return playerPreferenceValues;
         }
 
-        private Interests GetPlayerInterests(string username)
+        private Interests GetPlayerInterests(string sessionKey)
         {
             Interests playerInterests = new Interests();
             SqlCommand query = new SqlCommand(
                "SELECT * FROM Player_Interests " +
-               //"INNER JOIN Sessions ON Sessions.username = Player_Interests.username " +
-               "WHERE username = @username"
-            //"Sessions.session_key = @sessionKey;"
+               "INNER JOIN Sessions ON Sessions.username = Player_Interests.username " +
+               "WHERE Sessions.session_key = @sessionKey;"
             );
-            query.Parameters.AddWithValue("@username", username);
+            query.Parameters.AddWithValue("@sessionKey", sessionKey);
             Database.Connect();
             SqlDataReader reader = Database.Query(query);
             while (reader.Read())

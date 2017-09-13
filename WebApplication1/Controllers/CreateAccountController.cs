@@ -20,6 +20,8 @@ namespace WebApplication1.Controllers
             public string name;
             public string password;
             public string email;
+            public string gender;
+            public string birthdate;
         }
 
         public class EncryptedPasswordPair
@@ -72,10 +74,17 @@ namespace WebApplication1.Controllers
             queryCreateAccount.Parameters.AddWithValue("@currency", Currency);
             queryCreateAccount.Parameters.AddWithValue("@avatar", avatar);
 
-            Database.Connect();
-            Database.Query(queryCreateAccount);
-            Database.Disconnect();
+            SqlCommand queryAccountDetails = new SqlCommand("INSERT INTO Account_Demographics values(@username, @gender, @birthdate);");
+            queryAccountDetails.Parameters.AddWithValue("@username", details.username);
+            queryAccountDetails.Parameters.AddWithValue("@gender", details.gender);
+            queryAccountDetails.Parameters.AddWithValue("@birthdate", details.birthdate);
 
+            Database.Connect();
+            SqlDataReader reader = Database.Query(queryCreateAccount);
+            reader.Close();
+            Database.Query(queryAccountDetails);
+            Database.Disconnect();
+            
             result.error = false;
             result.message = "Account Created";
             return result;

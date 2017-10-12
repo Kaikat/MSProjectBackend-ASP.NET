@@ -196,6 +196,7 @@
     <Compile Include="Controllers\RecommendationController.cs" />
     <Compile Include="Controllers\Utilities.cs" />
     <Compile Include="Controllers\ValuesController.cs" />
+    <Compile Include="Enums\AnimalSpecies.cs" />
     <Compile Include="Controllers\Weights.cs" />
     <Compile Include="Global.asax.cs">
       <DependentUpon>Global.asax</DependentUpon>

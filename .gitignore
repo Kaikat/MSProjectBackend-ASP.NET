@@ -262,5 +262,6 @@ __pycache__/
 
 # Files in SensorModel
 SensorModel/*.txt
+SensorModel/*.csv
 SensorModel/*.Rhistory
 SensorModel/*.xls

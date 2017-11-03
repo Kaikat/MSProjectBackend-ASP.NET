@@ -189,6 +189,7 @@
     <Compile Include="Controllers\LocationsController.cs" />
     <Compile Include="Controllers\LoginController.cs" />
     <Compile Include="Controllers\Major.cs" />
+    <Compile Include="Controllers\MajorsController.cs" />
     <Compile Include="Controllers\NotifyAnimalEncounterController.cs" />
     <Compile Include="Controllers\PlayerAnimalsController.cs" />
     <Compile Include="Controllers\PlayerController.cs" />
@@ -258,6 +259,7 @@
   <ItemGroup>
     <Folder Include="App_Data\" />
     <Folder Include="Models\" />
+    <Folder Include="Views\Majors\" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="fonts\glyphicons-halflings-regular.woff" />
